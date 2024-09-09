@@ -3,6 +3,8 @@ import "~/styles/globals.css";
 import { GeistSans } from "geist/font/sans";
 import { type Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
+import Navbar from "./_components/navbar";
+import { Toaster } from "~/components/ui/sonner";
 
 export const metadata: Metadata = {
   title: "Record Club",
@@ -16,7 +18,11 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <html lang="en" className={`${GeistSans.variable}`}>
-        <body>{children}</body>
+        <body>
+          <Navbar />
+          <main className="px-6 pt-3">{children}</main>
+          <Toaster />
+        </body>
       </html>
     </ClerkProvider>
   );

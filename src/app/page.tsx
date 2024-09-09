@@ -1,24 +1,33 @@
-import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
-import { db } from "~/server/db";
+import { SignedIn, SignedOut } from "@clerk/nextjs";
+import { Button } from "~/components/ui/button";
 
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const data = await db.query.posts.findMany();
-
-  console.log(data);
-
   return (
     <div>
-      <h1>Record Club</h1>
       <div>
-        <SignedOut>
-          <SignInButton />
-        </SignedOut>
         <SignedIn>
-          <UserButton />
+          <SignedInHome />
         </SignedIn>
+        <SignedOut>
+          <SignedOutHome />
+        </SignedOut>
       </div>
     </div>
   );
+}
+
+async function SignedInHome() {
+  return (
+    <div className="flex">
+      <Button asChild>
+        <a href="/clubs/create">Create Club</a>
+      </Button>
+    </div>
+  );
+}
+
+function SignedOutHome() {
+  return <div>SignedOutHome</div>;
 }
