@@ -5,6 +5,7 @@ import { type Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
 import Navbar from "./_components/navbar";
 import { Toaster } from "~/components/ui/sonner";
+import { ReactQueryProvider } from "./_components/react-query-provider";
 
 export const metadata: Metadata = {
   title: "Record Club",
@@ -17,13 +18,15 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <ClerkProvider>
-      <html lang="en" className={`${GeistSans.variable}`}>
-        <body>
-          <Navbar />
-          <main className="px-6 pt-3">{children}</main>
-          <Toaster />
-        </body>
-      </html>
+      <ReactQueryProvider>
+        <html lang="en" className={`${GeistSans.variable}`}>
+          <body>
+            <Navbar />
+            <main className="px-6 pt-3">{children}</main>
+            <Toaster />
+          </body>
+        </html>
+      </ReactQueryProvider>
     </ClerkProvider>
   );
 }

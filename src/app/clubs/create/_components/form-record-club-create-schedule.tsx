@@ -10,54 +10,178 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
-import { Input } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
-import { Separator } from "~/components/ui/separator";
+import { TypeaheadAlbums } from "./typeahead-albums";
+import { SelectClubAlbum, type SelectAlbum } from "~/server/db/schema";
+import { addAlbumToClub, deleteClubAlbum } from "~/server/api/clubs";
+import { useAction } from "next-safe-action/hooks";
+import { useQuery, UseQueryOptions } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { parseAsInteger, useQueryState } from "nuqs";
+import { format, parseISO } from "date-fns";
+import { TrashIcon } from "lucide-react";
+import { revalidatePath } from "next/cache";
+import { useRouter } from "next/navigation";
 
 export function FormRecordClubCreateSchedule({
-  setStep,
+  clubAlbums,
   clubId,
 }: {
-  setStep: (step: number) => void;
-  clubId: number | null;
+  clubAlbums: (SelectClubAlbum & { album: SelectAlbum })[] | null;
+  clubId: number;
 }) {
+  const [, setStep] = useQueryState("step", parseAsInteger.withDefault(1));
   const [selectedDate, setSelectedDate] = useState<Date>();
+  const [selectedAlbum, setSelectedAlbum] = useState<SelectAlbum>();
+  const router = useRouter();
+  const { execute } = useAction(addAlbumToClub, {
+    onSuccess(args) {
+      console.log("Success", args);
+      setSelectedDate(undefined);
+      setSelectedAlbum(undefined);
+    },
+    onError(error) {
+      console.log("Error", error);
+      if (error.error.serverError) {
+        toast.error(error.error.serverError);
+      } else {
+        toast.error("Unable to add album to club");
+      }
+    },
+  });
+
+  const {
+    execute: deleteAlbum,
+    input: deleteInput,
+    isExecuting: isDeleting,
+  } = useAction(deleteClubAlbum, {
+    onSuccess() {
+      toast.success("Album deleted");
+    },
+    onError() {
+      toast.error("Unable to delete album");
+    },
+  });
+
   function handleSelect(date?: Date) {
     setSelectedDate(date);
   }
 
   return (
-    <div>
+    <form
+      action={() => {
+        void execute({
+          clubId: clubId,
+          albumId: selectedAlbum?.id!,
+          scheduledFor: format(selectedDate!, "yyyy-MM-dd"),
+        });
+      }}
+    >
       <Card className="mx-auto w-full max-w-md">
         <CardHeader>
           <CardTitle>Add albums to the schedule</CardTitle>
         </CardHeader>
-        <CardContent className="flex flex-col items-center space-y-6">
+        <CardContent className="flex flex-col space-y-6">
           <Calendar
             mode="single"
-            // today={undefined}
             selected={selectedDate}
             onSelect={handleSelect}
-            disabled={{ before: new Date() }}
+            disabled={[
+              { before: new Date() },
+              ...(clubAlbums
+                ?.filter((clubAlbum) => clubAlbum.scheduledFor)
+                .map((clubAlbum) => parseISO(clubAlbum.scheduledFor!)) ?? []),
+            ]}
+            modifiers={{
+              booked:
+                clubAlbums
+                  ?.filter((clubAlbum) => clubAlbum.scheduledFor)
+                  .map((clubAlbum) => parseISO(clubAlbum.scheduledFor!)) ?? [],
+            }}
+            modifiersClassNames={{
+              booked: "bg-gray-200 text-gray-800 opacity-50",
+            }}
           />
-          <Separator />
-          {selectedDate && (
-            <div>
-              <div className="space-y-2">
-                <Label htmlFor="name">Add Album</Label>
-                <Input required />
-              </div>
-            </div>
-          )}
+
+          <div className="space-y-2">
+            <TypeaheadAlbums
+              selected={selectedAlbum}
+              setSelected={setSelectedAlbum}
+            />
+          </div>
+          <div className="w-full">
+            <h3 className="mb-2 text-lg font-medium">Scheduled Albums</h3>
+            {clubAlbums && clubAlbums.length > 0 ? (
+              <ul className="space-y-2 divide-y-[1px] divide-gray-100">
+                {clubAlbums.map((clubAlbum) => (
+                  <li
+                    key={clubAlbum.id}
+                    className={`flex items-start justify-between gap-3 py-2 ${isDeleting && deleteInput.clubAlbumId === clubAlbum.id ? "opacity-50" : ""}`}
+                  >
+                    <span className="relative top-1 text-sm text-gray-500">
+                      {clubAlbum.scheduledFor
+                        ? format(parseISO(clubAlbum.scheduledFor), "M/d")
+                        : "Not scheduled"}
+                    </span>
+                    <span className="flex flex-1 flex-col text-lg">
+                      <span className="font-medium">
+                        {clubAlbum.album.artist}
+                      </span>
+                      <span className="italic text-gray-800">
+                        {clubAlbum.album.title}
+                      </span>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        void deleteAlbum({
+                          clubAlbumId: clubAlbum.id,
+                        });
+                      }}
+                      className="ml-2 self-center text-red-600 hover:text-red-800"
+                    >
+                      <TrashIcon className="h-5 w-5" />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-gray-500">No albums scheduled yet.</p>
+            )}
+          </div>
         </CardContent>
-        <CardFooter>
-          {selectedDate && (
-            <Button type="submit" className="w-full">
-              Create Club
-            </Button>
-          )}
+        <CardFooter className="flex justify-between">
+          <Button
+            variant="ghost"
+            type="button"
+            onClick={() => router.push(`/clubs/create?step=3&clubId=${clubId}`)}
+          >
+            Next step
+          </Button>
+          <Button type="submit" disabled={!selectedAlbum || !selectedDate}>
+            Add album
+          </Button>
         </CardFooter>
       </Card>
-    </div>
+    </form>
   );
+}
+
+type ClubAlbumsQueryVariables = {
+  clubId: number;
+};
+
+function useClubAlbumsQuery(
+  { clubId }: ClubAlbumsQueryVariables,
+  options?: Omit<
+    UseQueryOptions<{ albums: SelectAlbum[] }>,
+    "queryKey" | "queryFn"
+  >,
+) {
+  return useQuery({
+    queryKey: ["clubAlbums", clubId],
+    queryFn: () => {
+      return fetch(`/api/clubs/${clubId}/albums`).then((res) => res.json());
+    },
+    ...options,
+  });
 }

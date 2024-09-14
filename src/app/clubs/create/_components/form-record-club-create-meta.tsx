@@ -18,6 +18,7 @@ import { z } from "zod";
 import { useAction } from "next-safe-action/hooks";
 import { createClub } from "~/server/api/clubs";
 import { toast } from "sonner";
+import { parseAsInteger, useQueryState } from "nuqs";
 
 export const createClubSchema = z.object({
   name: z.string().min(1),
@@ -27,13 +28,10 @@ export const createClubSchema = z.object({
 
 export type CreateClubForm = z.infer<typeof createClubSchema>;
 
-export function FormRecordClubCreateMeta({
-  setStep,
-  setClubId,
-}: {
-  setStep: (step: number) => void;
-  setClubId: (clubId: number) => void;
-}) {
+export function FormRecordClubCreateMeta() {
+  const [, setStep] = useQueryState("step", parseAsInteger.withDefault(1));
+  const [, setClubId] = useQueryState("clubId", parseAsInteger);
+
   const form = useForm({
     defaultValues: {
       name: "",

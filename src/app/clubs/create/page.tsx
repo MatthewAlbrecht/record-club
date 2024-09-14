@@ -1,27 +1,47 @@
-"use client";
-
 import { z } from "zod";
-import { useQueryState, parseAsInteger } from "nuqs";
+import { db } from "~/server/db";
+import { clubAlbums } from "~/server/db/schema";
+import { eq } from "drizzle-orm";
 
 import { FormRecordClubCreateMeta } from "./_components/form-record-club-create-meta";
 import { FormRecordClubCreateSchedule } from "./_components/form-record-club-create-schedule";
+import { FormRecordClubQuestionSelection } from "./_components/form-record-club-question-selection";
 
-export const createClubSchema = z.object({
-  name: z.string().min(1),
-  description: z.string().min(1),
-  image: z.string().nullable(),
-});
+export default async function ClubsCreatePage({
+  searchParams,
+}: {
+  searchParams: { step?: string; clubId?: string };
+}) {
+  const step = Number(searchParams.step);
+  const clubId = Number(searchParams.clubId);
 
-export type CreateClubForm = z.infer<typeof createClubSchema>;
+  const clubAlbumsData = clubId
+    ? await db.query.clubAlbums.findMany({
+        where: eq(clubAlbums.clubId, clubId),
+        orderBy: (clubAlbums, { asc }) => [asc(clubAlbums.scheduledFor)],
+        with: {
+          album: true,
+        },
+      })
+    : null;
 
-export default function ClubsCreatePage() {
-  const [step, setStep] = useQueryState("step", parseAsInteger.withDefault(1));
-  const [clubId, setClubId] = useQueryState("clubId", parseAsInteger);
+  const questions = step === 3 ? await db.query.questions.findMany() : null;
 
-  if (step === 1) {
-    return <FormRecordClubCreateMeta setStep={setStep} setClubId={setClubId} />;
+  if (!step || step === 1) {
+    return <FormRecordClubCreateMeta />;
   }
-  if (step === 2) {
-    return <FormRecordClubCreateSchedule setStep={setStep} clubId={clubId} />;
+  if (clubId && step === 2) {
+    return (
+      <FormRecordClubCreateSchedule
+        clubAlbums={clubAlbumsData}
+        clubId={clubId}
+      />
+    );
   }
+  if (step === 3 && clubId) {
+    return (
+      <FormRecordClubQuestionSelection questions={questions!} clubId={clubId} />
+    );
+  }
+  return null;
 }
