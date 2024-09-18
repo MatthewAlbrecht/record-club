@@ -38,6 +38,12 @@ export const questionCategoryEnum = pgEnum("question_category", [
   "number",
 ]);
 
+export const clubMemberRoleEnum = pgEnum("club_member_role", [
+  "owner",
+  "admin",
+  "member",
+]);
+
 /**
  * Tables
  */
@@ -46,7 +52,8 @@ export const clubs = createTable(
   {
     id: serial("id").primaryKey(),
     name: varchar("name", { length: 256 }).notNull(),
-    description: varchar("description", { length: 2048 }).notNull(),
+    shortDescription: varchar("short_description", { length: 128 }).notNull(),
+    longDescription: varchar("long_description", { length: 2048 }).notNull(),
     createdById: varchar("created_by_id", { length: 256 }).notNull(),
     ownedById: varchar("owned_by_id", { length: 256 }).notNull(),
     clubType: clubTypeEnum("club_type").notNull().default("live"),
@@ -151,9 +158,13 @@ export const answers = createTable("answer", {
   questionId: integer("question_id")
     .references(() => questions.id)
     .notNull(),
+  userClubAlbumProgressId: integer("user_club_album_progress_id")
+    .references(() => userClubAlbumProgress.id)
+    .notNull(),
 
   // Separate columns for different answer types
-  answerText: varchar("answer_text", { length: 2048 }),
+  answerShortText: varchar("answer_short_text", { length: 128 }),
+  answerLongText: varchar("answer_long_text", { length: 2048 }),
   answerBoolean: boolean("answer_boolean"),
   answerNumber: integer("answer_number"),
   answerColor: varchar("answer_color", { length: 7 }), // e.g., "#FFFFFF"
@@ -163,14 +174,91 @@ export const answers = createTable("answer", {
     .notNull(),
 });
 
+export const clubMembers = createTable(
+  "club_member",
+  {
+    id: serial("id").primaryKey(),
+    clubId: integer("club_id")
+      .references(() => clubs.id)
+      .notNull(),
+    userId: varchar("user_id", { length: 256 }).notNull(),
+    role: clubMemberRoleEnum("role").default("member").notNull(),
+    isActive: boolean("is_active").default(true).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).$onUpdate(
+      () => new Date(),
+    ),
+  },
+  (table) => ({
+    uniqueClubUser: uniqueIndex("unique_club_user").on(
+      table.clubId,
+      table.userId,
+    ),
+  }),
+);
+
+/**
+ * New userClubAlbumProgress table to track user progress on clubAlbums.
+ */
+export const userClubAlbumProgress = createTable(
+  "user_club_album_progress",
+  {
+    id: serial("id").primaryKey(),
+    userId: varchar("user_id", { length: 256 }).notNull(),
+    clubId: integer("club_id")
+      .references(() => clubs.id)
+      .notNull(),
+    albumId: integer("album_id")
+      .references(() => albums.id)
+      .notNull(),
+    clubAlbumId: integer("club_album_id")
+      .references(() => clubAlbums.id)
+      .notNull(),
+    hasListened: boolean("has_listened").default(false).notNull(),
+    listenedAt: timestamp("listened_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).$onUpdate(
+      () => new Date(),
+    ),
+  },
+  (table) => ({
+    uniqueUserClubAlbum: uniqueIndex("unique_user_club_album").on(
+      table.userId,
+      table.clubAlbumId,
+    ),
+  }),
+);
+
 /**
  * Relations
  */
-export const clubAlbumsRelations = relations(clubAlbums, ({ one }) => ({
+
+export const clubsRelations = relations(clubs, ({ many }) => ({
+  clubAlbums: many(clubAlbums),
+  clubMembers: many(clubMembers),
+}));
+
+export const clubMembersRelations = relations(clubMembers, ({ one }) => ({
+  club: one(clubs, {
+    fields: [clubMembers.clubId],
+    references: [clubs.id],
+  }),
+}));
+
+export const clubAlbumsRelations = relations(clubAlbums, ({ one, many }) => ({
   album: one(albums, {
     fields: [clubAlbums.albumId],
     references: [albums.id],
   }),
+  club: one(clubs, {
+    fields: [clubAlbums.clubId],
+    references: [clubs.id],
+  }),
+  userProgress: many(userClubAlbumProgress),
 }));
 
 export const clubQuestionsRelations = relations(clubQuestions, ({ one }) => ({
@@ -201,7 +289,22 @@ export const answersRelations = relations(answers, ({ one }) => ({
     fields: [answers.questionId],
     references: [questions.id],
   }),
+  userClubAlbumProgress: one(userClubAlbumProgress, {
+    fields: [answers.userClubAlbumProgressId],
+    references: [userClubAlbumProgress.id],
+  }),
 }));
+
+export const userClubAlbumProgressRelations = relations(
+  userClubAlbumProgress,
+  ({ one, many }) => ({
+    clubAlbum: one(clubAlbums, {
+      fields: [userClubAlbumProgress.clubAlbumId],
+      references: [clubAlbums.id],
+    }),
+    answers: many(answers),
+  }),
+);
 
 /**
  * Types
@@ -223,3 +326,10 @@ export type InsertClubQuestion = InferInsertModel<typeof clubQuestions>;
 
 export type SelectAnswer = InferSelectModel<typeof answers>;
 export type InsertAnswer = InferInsertModel<typeof answers>;
+
+export type SelectUserClubAlbumProgress = InferSelectModel<
+  typeof userClubAlbumProgress
+>;
+export type InsertUserClubAlbumProgress = InferInsertModel<
+  typeof userClubAlbumProgress
+>;

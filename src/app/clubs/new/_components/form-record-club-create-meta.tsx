@@ -16,14 +16,14 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useAction } from "next-safe-action/hooks";
-import { createClub } from "~/server/api/clubs";
+import { createClub } from "~/server/api/clubs-actions";
 import { toast } from "sonner";
 import { parseAsInteger, useQueryState } from "nuqs";
 
 export const createClubSchema = z.object({
   name: z.string().min(1),
-  description: z.string().min(1),
-  image: z.string().nullable(),
+  shortDescription: z.string().min(1),
+  longDescription: z.string().min(1),
 });
 
 export type CreateClubForm = z.infer<typeof createClubSchema>;
@@ -35,8 +35,8 @@ export function FormRecordClubCreateMeta() {
   const form = useForm({
     defaultValues: {
       name: "",
-      description: "",
-      image: null,
+      shortDescription: "",
+      longDescription: "",
     },
     resolver: zodResolver(createClubSchema),
   });
@@ -71,8 +71,18 @@ export function FormRecordClubCreateMeta() {
               <Input required {...form.register("name")} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
-              <Textarea id="description" {...form.register("description")} />
+              <Label htmlFor="shortDescription">Short Description</Label>
+              <Textarea
+                id="shortDescription"
+                {...form.register("shortDescription")}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="longDescription">Long Description</Label>
+              <Textarea
+                id="longDescription"
+                {...form.register("longDescription")}
+              />
             </div>
           </div>
           <Separator />

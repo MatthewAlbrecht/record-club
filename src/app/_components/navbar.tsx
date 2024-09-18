@@ -13,15 +13,15 @@ export default function Navbar() {
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center">
             <a href="/" className="flex flex-shrink-0 items-center">
-              <Disc className="text-primary h-8 w-8" />
-              <span className="text-primary ml-2 text-xl font-bold">
+              <Disc className="h-8 w-8 text-primary" />
+              <span className="ml-2 text-xl font-bold text-primary">
                 Record Club
               </span>
             </a>
             <div className="hidden md:block">
               <div className="ml-10 flex items-baseline space-x-4">
                 <Button asChild variant="ghost">
-                  <a href="/discovery">Discovery</a>
+                  <a href="/discover">Discover</a>
                 </Button>
                 <Button asChild variant="ghost">
                   <a href="/clubs">Clubs</a>
@@ -57,9 +57,9 @@ export default function Navbar() {
         <div className="md:hidden">
           <div className="space-y-1 px-2 pb-3 pt-2 sm:px-3">
             <Button asChild variant="ghost">
-              <a href="/discovery">
+              <a href="/discover">
                 <Disc className="mr-2 inline-block h-5 w-5" />
-                Discovery
+                Discover
               </a>
             </Button>
             <Button asChild variant="ghost">

@@ -22,7 +22,7 @@ import {
 } from "~/components/ui/form";
 import { Separator } from "~/components/ui/separator";
 import { useZodForm } from "~/lib/hooks/useZodForm";
-import { selectClubQuestions } from "~/server/api/clubs";
+import { selectClubQuestions } from "~/server/api/clubs-actions";
 import { SelectQuestion } from "~/server/db/schema";
 import { toast } from "sonner";
 

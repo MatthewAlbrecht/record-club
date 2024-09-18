@@ -12,14 +12,13 @@ import {
 } from "~/components/ui/card";
 import { TypeaheadAlbums } from "./typeahead-albums";
 import { SelectClubAlbum, type SelectAlbum } from "~/server/db/schema";
-import { addAlbumToClub, deleteClubAlbum } from "~/server/api/clubs";
+import { addAlbumToClub, deleteClubAlbum } from "~/server/api/clubs-actions";
 import { useAction } from "next-safe-action/hooks";
 import { useQuery, UseQueryOptions } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { parseAsInteger, useQueryState } from "nuqs";
 import { format, parseISO } from "date-fns";
 import { TrashIcon } from "lucide-react";
-import { revalidatePath } from "next/cache";
 import { useRouter } from "next/navigation";
 
 export function FormRecordClubCreateSchedule({
@@ -35,14 +34,12 @@ export function FormRecordClubCreateSchedule({
   const router = useRouter();
   const { execute } = useAction(addAlbumToClub, {
     onSuccess(args) {
-      console.log("Success", args);
       setSelectedDate(undefined);
       setSelectedAlbum(undefined);
     },
-    onError(error) {
-      console.log("Error", error);
-      if (error.error.serverError) {
-        toast.error(error.error.serverError);
+    onError({ error }) {
+      if (typeof error.serverError === "string") {
+        toast.error(error.serverError);
       } else {
         toast.error("Unable to add album to club");
       }
@@ -153,7 +150,7 @@ export function FormRecordClubCreateSchedule({
           <Button
             variant="ghost"
             type="button"
-            onClick={() => router.push(`/clubs/create?step=3&clubId=${clubId}`)}
+            onClick={() => router.push(`/clubs/new?step=3&clubId=${clubId}`)}
           >
             Next step
           </Button>

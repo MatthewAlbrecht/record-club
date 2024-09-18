@@ -2,6 +2,8 @@ import { auth } from "@clerk/nextjs/server";
 import {
   createSafeActionClient,
   DEFAULT_SERVER_ERROR_MESSAGE,
+  flattenValidationErrors,
+  returnValidationErrors,
 } from "next-safe-action";
 import { z } from "zod";
 
@@ -32,20 +34,20 @@ export class DatabaseError extends Error {
 }
 
 export const actionClient = createSafeActionClient({
-  throwValidationErrors: true,
   handleServerError(e) {
-    console.error("Action error:", e.message);
-
     if (e instanceof ActionError) {
+      console.error("Action error:", e.message);
       return e.message;
     }
 
     if (e instanceof DatabaseError) {
+      console.error("Database error:", e.message);
       return e.message;
     }
 
     return DEFAULT_SERVER_ERROR_MESSAGE;
   },
+  defaultValidationErrorsShape: "flattened",
   defineMetadataSchema() {
     return z.object({
       actionName: z.string(),
