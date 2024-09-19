@@ -90,7 +90,6 @@ export function FormQuestionnaire({
                   question={question}
                   clubQuestionId={clubQuestionId}
                   answer={defaultValues[question.id]}
-                  defaultValues={defaultValues}
                 />
               </div>
             </div>
@@ -108,12 +107,10 @@ function QuestionBuilder({
   question,
   clubQuestionId,
   answer,
-  defaultValues,
 }: {
   question: SelectQuestion;
   clubQuestionId: number;
   answer: SelectAnswer | undefined;
-  defaultValues: Record<number, SelectAnswer>;
 }) {
   const name = `question-${clubQuestionId}`;
 
@@ -156,6 +153,8 @@ function QuestionBuilder({
         type="number"
         name={name}
         step="0.1"
+        min="0"
+        max="10"
         defaultValue={
           answer?.answerNumber != null ? answer.answerNumber : undefined
         }

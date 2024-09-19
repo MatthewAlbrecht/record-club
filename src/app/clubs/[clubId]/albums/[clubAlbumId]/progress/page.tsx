@@ -2,6 +2,7 @@ import { db } from "~/server/db";
 import { notFound } from "next/navigation";
 
 import { FormQuestionnaire } from "./_components/form-questionnaire";
+import { auth } from "@clerk/nextjs/server";
 
 interface ProgressPageProps {
   params: {
@@ -16,8 +17,7 @@ export default async function ProgressPage({
   const parsedClubId = Number(clubId);
   const parsedClubAlbumId = Number(clubAlbumId);
 
-  console.log("parsedClubId", parsedClubId);
-  console.log("parsedClubAlbumId", parsedClubAlbumId);
+  const { userId } = auth().protect();
 
   if (isNaN(parsedClubId) || isNaN(parsedClubAlbumId)) {
     notFound();
@@ -46,7 +46,8 @@ export default async function ProgressPage({
   });
 
   const answers = await db.query.answers.findMany({
-    where: (answers, { eq }) => eq(answers.clubAlbumId, clubAlbum.id),
+    where: (answers, { eq, and }) =>
+      and(eq(answers.clubAlbumId, clubAlbum.id), eq(answers.userId, userId)),
   });
 
   return (

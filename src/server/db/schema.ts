@@ -13,6 +13,7 @@ import {
   date,
   uniqueIndex,
   boolean,
+  decimal,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
@@ -37,6 +38,8 @@ export const questionCategoryEnum = pgEnum("question_category", [
   "color-picker",
   "number",
 ]);
+
+export type QuestionCategory = (typeof questionCategoryEnum.enumValues)[number];
 
 export const clubMemberRoleEnum = pgEnum("club_member_role", [
   "owner",
@@ -70,17 +73,26 @@ export const clubs = createTable(
   }),
 );
 
-export const albums = createTable("album", {
-  id: serial("id").primaryKey(),
-  title: varchar("title", { length: 256 }).notNull(),
-  artist: varchar("artist", { length: 256 }).notNull(),
-  releaseYear: integer("release_year"),
-  releaseMonth: integer("release_month"),
-  releaseDay: integer("release_day"),
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .default(sql`CURRENT_TIMESTAMP`)
-    .notNull(),
-});
+export const albums = createTable(
+  "album",
+  {
+    id: serial("id").primaryKey(),
+    title: varchar("title", { length: 256 }).notNull(),
+    artist: varchar("artist", { length: 256 }).notNull(),
+    releaseYear: integer("release_year"),
+    releaseMonth: integer("release_month"),
+    releaseDay: integer("release_day"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+  },
+  (album) => ({
+    uniqueTitleArtist: uniqueIndex("unique_title_artist").on(
+      album.title,
+      album.artist,
+    ),
+  }),
+);
 
 export const questions = createTable("question", {
   id: serial("id").primaryKey(),
@@ -166,7 +178,7 @@ export const answers = createTable("answer", {
   answerShortText: varchar("answer_short_text", { length: 128 }),
   answerLongText: varchar("answer_long_text", { length: 2048 }),
   answerBoolean: boolean("answer_boolean"),
-  answerNumber: integer("answer_number"),
+  answerNumber: decimal("answer_number", { precision: 3, scale: 1 }),
   answerColor: varchar("answer_color", { length: 7 }), // e.g., "#FFFFFF"
 
   createdAt: timestamp("created_at", { withTimezone: true })

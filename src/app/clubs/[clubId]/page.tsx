@@ -9,6 +9,9 @@ import {
   Share2,
   Settings,
   NotebookPen,
+  Table,
+  ChartColumnStacked,
+  ArrowRight,
 } from "lucide-react";
 import { db } from "~/server/db";
 import { notFound } from "next/navigation";
@@ -51,10 +54,10 @@ async function ClubPageIsMember({
   isOwner: boolean;
 }) {
   const { userId } = auth().protect();
-  const upcomingAlbum = await getUpcomingAlbumWithProgress(club.id, userId);
-  const upcomingAlbumProgress = upcomingAlbum
-    ? await getUserClubAlbumProgress(upcomingAlbum.id, userId)
-    : undefined;
+  const upcomingAlbums = await getUpcomingAlbums(club.id, userId);
+
+  const [upcomingAlbum, ...restAlbums] = upcomingAlbums;
+
   const daysUntilUpcomingAlbum = getDaysUntilUpcomingAlbum(
     upcomingAlbum?.scheduledFor,
   );
@@ -115,12 +118,12 @@ async function ClubPageIsMember({
                     {upcomingAlbum?.album.title}
                   </p>
 
-                  {upcomingAlbumProgress?.hasListened ? (
+                  {upcomingAlbum.userProgress[0]?.hasListened ? (
                     <Button variant="outline" className="mt-2" asChild>
                       <Link
-                        href={`/clubs/${club.id}/albums/${upcomingAlbum?.id}/progress`}
+                        href={`/clubs/${club.id}/albums/${upcomingAlbum?.id}`}
                       >
-                        <NotebookPen className="mr-2 h-4 w-4" />
+                        <ChartColumnStacked className="mr-2 h-4 w-4" />
                         Explore reviews
                       </Link>
                     </Button>
@@ -143,6 +146,38 @@ async function ClubPageIsMember({
             )}
           </CardContent>
         </Card>
+        <ul className="flex flex-col divide-y-[1px]">
+          {upcomingAlbums.map(
+            ({ id, album, club, scheduledFor, userProgress }) => (
+              <li key={album.id} className="flex flex-col py-2">
+                <div className="flex flex-row justify-between">
+                  <p className="font-semibold">{album.artist}</p>
+                  {scheduledFor && (
+                    <p className="text-sm text-muted-foreground">
+                      {format(new Date(scheduledFor), "MMM d")}
+                    </p>
+                  )}
+                </div>
+                <div className="flex flex-row items-center justify-between gap-1">
+                  <p className="text-sm">{album.title}</p>
+                  <Link
+                    href={
+                      userProgress[0]?.hasListened
+                        ? `/clubs/${club.id}/albums/${id}`
+                        : `/clubs/${club.id}/albums/${id}/progress`
+                    }
+                    className="flex flex-row items-center gap-1 text-sm text-accent-foreground"
+                  >
+                    {userProgress[0]?.hasListened
+                      ? "Explore reviews"
+                      : "Track progress"}
+                    <ArrowRight className="h-3 w-3" />
+                  </Link>
+                </div>
+              </li>
+            ),
+          )}
+        </ul>
       </div>
     </div>
   );
@@ -163,33 +198,6 @@ function getDaysUntilUpcomingAlbum(scheduledFor: string | null | undefined) {
   const scheduledDate = scheduledFor ? new Date(scheduledFor) : null;
 
   return scheduledDate ? differenceInDays(scheduledDate, today) : null;
-}
-
-async function getUpcomingAlbumWithProgress(clubId: number, userId: string) {
-  const today = new Date();
-  const formattedToday = format(today, "yyyy-MM-dd");
-
-  const result = await db.query.clubAlbums.findFirst({
-    where: (clubAlbums, { eq, and, gte }) =>
-      and(
-        eq(clubAlbums.clubId, clubId),
-        gte(clubAlbums.scheduledFor, formattedToday),
-      ),
-    with: {
-      album: true,
-    },
-  });
-  return result;
-}
-
-async function getUserClubAlbumProgress(clubAlbumId: number, userId: string) {
-  return db.query.userClubAlbumProgress.findFirst({
-    where: (userClubAlbumProgress, { eq, and }) =>
-      and(
-        eq(userClubAlbumProgress.clubAlbumId, clubAlbumId),
-        eq(userClubAlbumProgress.userId, userId),
-      ),
-  });
 }
 
 async function getClubWithAlbums(clubId: number) {
@@ -213,5 +221,31 @@ async function getUserClubMembership(clubId: number, userId: string) {
         eq(clubMembers.userId, userId),
         eq(clubMembers.isActive, true),
       ),
+  });
+}
+
+/* TODO @matthewalbrecht: this query is slow and should be optimized */
+async function getUpcomingAlbums(clubId: number, userId: string) {
+  const formattedToday = format(new Date(), "yyyy-MM-dd");
+
+  return db.query.clubAlbums.findMany({
+    where: (clubAlbums, { and, gte, eq }) =>
+      and(
+        eq(clubAlbums.clubId, clubId),
+        gte(clubAlbums.scheduledFor, formattedToday),
+      ),
+    with: {
+      album: true,
+      club: {
+        columns: {
+          id: true,
+          name: true,
+        },
+      },
+      userProgress: {
+        where: (userProgress, { eq }) => eq(userProgress.userId, userId),
+      },
+    },
+    orderBy: (clubAlbums, { asc }) => [asc(clubAlbums.scheduledFor)],
   });
 }

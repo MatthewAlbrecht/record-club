@@ -1,12 +1,7 @@
 "use server"; // don't forget to add this!
 
 import { z } from "zod";
-import {
-  ActionError,
-  authActionClient,
-  DatabaseError,
-  PGErrorCodes,
-} from "~/lib/safe-action";
+import { authActionClient } from "~/lib/safe-action";
 import { db } from "../db";
 import {
   answers as answersTable,
@@ -133,10 +128,40 @@ const deleteAlbumSchema = z.object({
   clubAlbumId: z.number(),
 });
 
+import { parseISO, isBefore } from "date-fns";
+import { ActionError, DatabaseError, PGErrorCodes } from "./utils";
+
 export const deleteClubAlbum = authActionClient
   .metadata({ actionName: "deleteClubAlbum" })
   .schema(deleteAlbumSchema)
-  .action(async ({ parsedInput: { clubAlbumId } }) => {
+  .action(async ({ parsedInput: { clubAlbumId }, ctx: { userId } }) => {
+    const club = await db.query.clubs.findFirst({
+      where: (club, { eq }) => eq(club.id, clubAlbumId),
+    });
+
+    if (!club) {
+      throw new ActionError("Club not found");
+    }
+
+    if (club.ownedById !== userId) {
+      throw new ActionError("You are not the owner of this club");
+    }
+
+    const clubAlbum = await db.query.clubAlbums.findFirst({
+      where: (clubAlbums, { eq }) => eq(clubAlbums.id, clubAlbumId),
+    });
+
+    if (!clubAlbum) {
+      throw new ActionError("Album not found");
+    }
+
+    if (
+      clubAlbum.scheduledFor &&
+      isBefore(parseISO(clubAlbum.scheduledFor), new Date())
+    ) {
+      throw new ActionError("Cannot delete an album scheduled in the past");
+    }
+
     await db.delete(clubAlbums).where(eq(clubAlbums.id, clubAlbumId));
     revalidatePath("/clubs/new");
     return { success: true };
@@ -359,7 +384,7 @@ export const submitClubAlbumProgress = authActionClient
           } else if (questionCategory === "number") {
             return {
               ...baseAnswer,
-              answerNumber: Number(answer),
+              answerNumber: answer,
             } satisfies Partial<SelectAnswer>;
           } else if (questionCategory === "color-picker") {
             return {
@@ -370,7 +395,7 @@ export const submitClubAlbumProgress = authActionClient
             throw new ActionError("Invalid question category");
           }
         });
-
+      console.log("HERERERE");
       try {
         await db.transaction(async (trx) => {
           const userClubAlbumProgress = await trx
@@ -387,7 +412,7 @@ export const submitClubAlbumProgress = authActionClient
               target: [
                 userClubAlbumProgressTable.userId,
                 userClubAlbumProgressTable.clubAlbumId,
-              ], // specify the unique constraint columns
+              ],
               set: {
                 hasListened,
                 listenedAt: hasListened ? new Date() : undefined,

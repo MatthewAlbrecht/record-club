@@ -10,7 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
-import { TypeaheadAlbums } from "./typeahead-albums";
+import { TypeaheadAlbums } from "~/components/typeahead-albums";
 import { SelectClubAlbum, type SelectAlbum } from "~/server/db/schema";
 import { addAlbumToClub, deleteClubAlbum } from "~/server/api/clubs-actions";
 import { useAction } from "next-safe-action/hooks";
@@ -28,12 +28,11 @@ export function FormRecordClubCreateSchedule({
   clubAlbums: (SelectClubAlbum & { album: SelectAlbum })[] | null;
   clubId: number;
 }) {
-  const [, setStep] = useQueryState("step", parseAsInteger.withDefault(1));
   const [selectedDate, setSelectedDate] = useState<Date>();
   const [selectedAlbum, setSelectedAlbum] = useState<SelectAlbum>();
   const router = useRouter();
   const { execute } = useAction(addAlbumToClub, {
-    onSuccess(args) {
+    onSuccess() {
       setSelectedDate(undefined);
       setSelectedAlbum(undefined);
     },
