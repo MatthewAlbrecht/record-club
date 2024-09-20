@@ -7,6 +7,7 @@ import {
 } from "next-safe-action";
 import { z } from "zod";
 import { ActionError, DatabaseError } from "~/server/api/utils";
+import { db } from "~/server/db";
 
 export const actionClient = createSafeActionClient({
   handleServerError(e) {
@@ -46,14 +47,22 @@ export const actionClient = createSafeActionClient({
 });
 
 export const authActionClient = actionClient.use(async ({ next }) => {
-  const { sessionId, userId } = auth();
+  const { sessionId, userId: clerkUserId } = auth();
 
   if (!sessionId) {
     throw new Error("Session not found!");
   }
-  if (!userId) {
+  if (!clerkUserId) {
     throw new Error("Session is not valid!");
   }
 
-  return next({ ctx: { userId } });
+  const user = await db.query.users.findFirst({
+    where: (users, { eq }) => eq(users.clerkId, clerkUserId),
+  });
+
+  if (!user) {
+    throw new Error("User not found!");
+  }
+
+  return next({ ctx: { clerkUserId, userId: user.id } });
 });

@@ -44,7 +44,7 @@ export const createClub = authActionClient
 
         await trx.insert(clubMembers).values({
           clubId: club[0]!.id,
-          clerkUserId: userId,
+          userId,
           role: "owner",
         });
 
@@ -95,7 +95,7 @@ export const addAlbumToClub = authActionClient
 
       const membership = await db.query.clubMembers.findFirst({
         where: (clubMember, { eq }) =>
-          eq(clubMember.clubId, clubId) && eq(clubMember.clerkUserId, userId),
+          eq(clubMember.clubId, clubId) && eq(clubMember.userId, userId),
       });
 
       if (!membership) {
@@ -235,7 +235,7 @@ export const joinClubAction = authActionClient
 
     const clubMember = await db.query.clubMembers.findFirst({
       where: (clubMember, { eq }) =>
-        eq(clubMember.clubId, clubId) && eq(clubMember.clerkUserId, userId),
+        eq(clubMember.clubId, clubId) && eq(clubMember.userId, userId),
     });
 
     if (clubMember && clubMember.isActive) {
@@ -257,7 +257,7 @@ export const joinClubAction = authActionClient
         .insert(clubMembers)
         .values({
           clubId,
-          clerkUserId: userId,
+          userId,
           role: "member",
         })
         .returning();
@@ -288,7 +288,7 @@ export const leaveClubAction = authActionClient
   .action(async ({ parsedInput: { clubId }, ctx: { userId } }) => {
     const clubMember = await db.query.clubMembers.findFirst({
       where: (clubMember, { eq }) =>
-        eq(clubMember.clubId, clubId) && eq(clubMember.clerkUserId, userId),
+        eq(clubMember.clubId, clubId) && eq(clubMember.userId, userId),
       with: {
         club: true,
       },
@@ -342,7 +342,7 @@ export const submitClubAlbumProgress = authActionClient
       const clubMember = await db.query.clubMembers.findFirst({
         where: (clubMember, { eq }) =>
           eq(clubMember.clubId, clubAlbum.clubId) &&
-          eq(clubMember.clerkUserId, userId),
+          eq(clubMember.userId, userId),
       });
 
       if (!clubMember) {
@@ -374,7 +374,7 @@ export const submitClubAlbumProgress = authActionClient
             clubId: clubAlbum.clubId,
             albumId: clubAlbum.albumId,
             questionId: questionId,
-            clerkUserId: userId,
+            userId,
           } satisfies Partial<SelectAnswer>;
 
           if (questionCategory === "short-answer") {
@@ -406,14 +406,14 @@ export const submitClubAlbumProgress = authActionClient
             throw new ActionError("Invalid question category");
           }
         });
-      console.log("HERERERE");
+
       try {
         await db.transaction(async (trx) => {
           const userClubAlbumProgress = await trx
             .insert(userClubAlbumProgressTable)
             .values({
               clubAlbumId,
-              clerkUserId: userId,
+              userId,
               clubId: clubAlbum.clubId,
               albumId: clubAlbum.albumId,
               hasListened,
@@ -421,7 +421,7 @@ export const submitClubAlbumProgress = authActionClient
             })
             .onConflictDoUpdate({
               target: [
-                userClubAlbumProgressTable.clerkUserId,
+                userClubAlbumProgressTable.userId,
                 userClubAlbumProgressTable.clubAlbumId,
               ],
               set: {
@@ -443,7 +443,6 @@ export const submitClubAlbumProgress = authActionClient
 
         return { success: true };
       } catch (error) {
-        console.log("error", error);
         throw error;
       }
     },

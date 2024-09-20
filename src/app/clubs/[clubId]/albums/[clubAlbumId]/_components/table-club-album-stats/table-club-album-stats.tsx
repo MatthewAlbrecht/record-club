@@ -11,54 +11,26 @@ import {
   SelectAnswer,
   SelectClubQuestion,
   SelectQuestion,
+  SelectUser,
   SelectUserClubAlbumProgress,
 } from "~/server/db/schema";
 import { DataTable } from "./data-table";
 
-export function TableClubAlbumStats({
-  clubQuestions,
-  userProgressions,
-}: {
+type Props = {
   clubQuestions: (SelectClubQuestion & { question: SelectQuestion })[];
   userProgressions: (SelectUserClubAlbumProgress & {
     answers: SelectAnswer[];
+    user: SelectUser;
   })[];
-}) {
-  const questionIdToCategoryMap = clubQuestions.reduce(
-    (acc, question) => {
-      acc[question.questionId] = question.question.category;
-      return acc;
-    },
-    {} as Record<number, QuestionCategory>,
-  );
+};
 
-  let columns: ColumnDef<
-    SelectUserClubAlbumProgress & { answers: SelectAnswer[] }
-  >[] = clubQuestions.map((question) => ({
-    accessorKey: question.questionId.toString(),
-    header: question.question.text,
-    cell: ({ row }) => {
-      if (question.question.category === "color-picker") {
-        return (
-          <div
-            className="flex h-10 w-10"
-            style={{
-              backgroundColor: row.getValue(question.questionId.toString()),
-            }}
-          />
-        );
-      }
+export function TableClubAlbumStats({
+  clubQuestions,
+  userProgressions,
+}: Props) {
+  const questionIdToCategoryMap = createQuestionIdToCategoryMap(clubQuestions);
 
-      return row.getValue(question.questionId.toString());
-    },
-  }));
-
-  columns.unshift({
-    accessorKey: "userId",
-    header: "User",
-  });
-
-  console.log("columns", columns);
+  let columns = createColumnsDefs(clubQuestions);
 
   const normalizedData = userProgressions.map((userProgression) => {
     return {
@@ -96,10 +68,54 @@ export function TableClubAlbumStats({
     }
   }
 
-  console.log("normalizedData", normalizedData);
   return (
     <div className="container mx-auto py-10">
       <DataTable columns={columns} data={normalizedData} />
     </div>
   );
+}
+
+function createQuestionIdToCategoryMap(clubQuestions: Props["clubQuestions"]) {
+  return clubQuestions.reduce(
+    (acc, question) => {
+      acc[question.questionId] = question.question.category;
+      return acc;
+    },
+    {} as Record<number, QuestionCategory>,
+  );
+}
+
+type ColumnDefs = ColumnDef<
+  SelectUserClubAlbumProgress & { answers: SelectAnswer[]; user: SelectUser }
+>[];
+
+function createColumnsDefs(clubQuestions: Props["clubQuestions"]): ColumnDefs {
+  const defs: ColumnDefs = clubQuestions.map((question) => ({
+    accessorKey: question.questionId.toString(),
+    header: question.question.text,
+    cell: ({ row }) => {
+      if (question.question.category === "color-picker") {
+        return (
+          <div
+            className="flex h-10 w-10"
+            style={{
+              backgroundColor: row.getValue(question.questionId.toString()),
+            }}
+          />
+        );
+      }
+
+      return row.getValue(question.questionId.toString());
+    },
+  }));
+
+  defs.unshift({
+    accessorKey: "userId",
+    header: "User",
+    cell: ({ row }) => {
+      return row.original.user.username;
+    },
+  });
+
+  return defs;
 }

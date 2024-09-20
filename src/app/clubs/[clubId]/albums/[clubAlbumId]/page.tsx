@@ -24,6 +24,7 @@ export default async function DemoPage({
       ),
     with: {
       answers: true,
+      user: true,
     },
   });
 

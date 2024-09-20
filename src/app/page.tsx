@@ -7,6 +7,7 @@ import { format } from "date-fns";
 import { db } from "~/server/db";
 import { clubMembers, clubs } from "~/server/db/schema";
 import { eq, and } from "drizzle-orm";
+import { getAuthenticatedUser } from "~/server/api/queries";
 
 export const dynamic = "force-dynamic";
 
@@ -26,11 +27,11 @@ export default async function HomePage() {
 }
 
 async function SignedInHome() {
-  const { userId } = auth().protect();
+  const user = await getAuthenticatedUser();
 
-  const clubsImAMemberOf = await getClubsForUser(userId);
+  const clubsImAMemberOf = await getClubsForUser(user!.id);
   const clubIds = clubsImAMemberOf.map(({ club }) => club.id);
-  const upcomingAlbums = await getUpcomingAlbums(clubIds, userId);
+  const upcomingAlbums = await getUpcomingAlbums(clubIds, user!.id);
 
   return (
     <div className="flex flex-col gap-4">
@@ -95,16 +96,16 @@ function SignedOutHome() {
 }
 
 // Database query functions
-async function getClubsForUser(userId: string) {
+async function getClubsForUser(userId: number) {
   return db
     .select()
     .from(clubMembers)
     .innerJoin(clubs, eq(clubMembers.clubId, clubs.id))
-    .where(and(eq(clubMembers.clerkUserId, userId), eq(clubs.isActive, true)));
+    .where(and(eq(clubMembers.userId, userId), eq(clubs.isActive, true)));
 }
 
 /* TODO @matthewalbrecht: this query is slow and should be optimized */
-async function getUpcomingAlbums(clubIds: number[], userId: string) {
+async function getUpcomingAlbums(clubIds: number[], userId: number) {
   const formattedToday = format(new Date(), "yyyy-MM-dd");
   return db.query.clubAlbums.findMany({
     where: (clubAlbums, { and, gte, inArray }) =>
@@ -121,7 +122,7 @@ async function getUpcomingAlbums(clubIds: number[], userId: string) {
         },
       },
       userProgress: {
-        where: (userProgress, { eq }) => eq(userProgress.clerkUserId, userId),
+        where: (userProgress, { eq }) => eq(userProgress.userId, userId),
       },
     },
     orderBy: (clubAlbums, { asc }) => [asc(clubAlbums.scheduledFor)],

@@ -4,18 +4,19 @@ import { db } from "~/server/db";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { FormRecordClubModifySchedule } from "./_components/form-record-club-modify-schedule";
 import { getClubWithAlbums } from "./_queries";
+import { getAuthenticatedUser } from "~/server/api/queries";
 
 export default async function ClubSettingsPage({
   params,
 }: {
   params: { clubId: string };
 }) {
-  const { userId } = auth().protect();
+  const user = await getAuthenticatedUser();
   const membership = await db.query.clubMembers.findFirst({
     where: (clubMembers, { eq, and }) =>
       and(
         eq(clubMembers.clubId, Number(params.clubId)),
-        eq(clubMembers.clerkUserId, userId),
+        eq(clubMembers.userId, user.id),
         eq(clubMembers.isActive, true),
       ),
   });

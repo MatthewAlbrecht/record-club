@@ -12,9 +12,10 @@ import {
 import { Button } from "~/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { getAuthenticatedUser } from "~/server/api/queries";
 
 export default async function DiscoverPage() {
-  const { userId } = auth().protect();
+  const user = await getAuthenticatedUser();
 
   const clubsImNotAMemberOf = await db.query.clubs.findMany({
     where: (clubs, { not, inArray, eq }) =>
@@ -24,12 +25,10 @@ export default async function DiscoverPage() {
           db
             .select({ id: clubMembers.clubId })
             .from(clubMembers)
-            .where(eq(clubMembers.clerkUserId, userId)),
+            .where(eq(clubMembers.userId, user.id)),
         ),
       ),
   });
-
-  console.log("clubsImNotAMemberOf", clubsImNotAMemberOf);
 
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">

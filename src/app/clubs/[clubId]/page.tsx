@@ -21,7 +21,8 @@ import Link from "next/link";
 import ButtonLeaveClub, {
   ButtonJoinClub,
 } from "./_components/button-club-actions";
-import { differenceInDays, format } from "date-fns";
+import { differenceInDays, format, isAfter, parseISO } from "date-fns";
+import { getAuthenticatedUser } from "~/server/api/queries";
 
 export default async function RecordClubHome({
   params: { clubId },
@@ -34,9 +35,9 @@ export default async function RecordClubHome({
   const club = await getClubWithAlbums(parsedClubId);
   if (!club) notFound();
 
-  const { userId } = auth().protect();
-  const membership = await getUserClubMembership(club.id, userId);
-  const isOwner = club.ownedById === userId;
+  const user = await getAuthenticatedUser();
+  const membership = await getUserClubMembership(club.id, user.id);
+  const isOwner = club.ownedById === user.id;
   const isMember = !!membership;
 
   return isMember ? (
@@ -53,10 +54,13 @@ async function ClubPageIsMember({
   club: SelectClub;
   isOwner: boolean;
 }) {
-  const { userId } = auth().protect();
-  const upcomingAlbums = await getUpcomingAlbums(club.id, userId);
+  const user = await getAuthenticatedUser();
+  const upcomingAlbums = await getUpcomingAlbums(club.id, user.id);
 
-  const [upcomingAlbum] = upcomingAlbums;
+  const upcomingAlbum = upcomingAlbums.find(
+    (album) =>
+      album.scheduledFor && isAfter(parseISO(album.scheduledFor), new Date()),
+  );
 
   const daysUntilUpcomingAlbum = getDaysUntilUpcomingAlbum(
     upcomingAlbum?.scheduledFor,
@@ -216,19 +220,19 @@ async function getClubWithAlbums(clubId: number) {
   });
 }
 
-async function getUserClubMembership(clubId: number, userId: string) {
+async function getUserClubMembership(clubId: number, userId: number) {
   return db.query.clubMembers.findFirst({
     where: (clubMembers, { eq, and }) =>
       and(
         eq(clubMembers.clubId, clubId),
-        eq(clubMembers.clerkUserId, userId),
+        eq(clubMembers.userId, userId),
         eq(clubMembers.isActive, true),
       ),
   });
 }
 
 /* TODO @matthewalbrecht: this query is slow and should be optimized */
-async function getUpcomingAlbums(clubId: number, userId: string) {
+async function getUpcomingAlbums(clubId: number, userId: number) {
   const formattedToday = format(new Date(), "yyyy-MM-dd");
 
   return db.query.clubAlbums.findMany({
@@ -242,7 +246,7 @@ async function getUpcomingAlbums(clubId: number, userId: string) {
         },
       },
       userProgress: {
-        where: (userProgress, { eq }) => eq(userProgress.clerkUserId, userId),
+        where: (userProgress, { eq }) => eq(userProgress.userId, userId),
       },
     },
     orderBy: (clubAlbums, { asc }) => [asc(clubAlbums.scheduledFor)],
