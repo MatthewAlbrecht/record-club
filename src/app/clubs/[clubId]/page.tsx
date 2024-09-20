@@ -56,7 +56,7 @@ async function ClubPageIsMember({
   const { userId } = auth().protect();
   const upcomingAlbums = await getUpcomingAlbums(club.id, userId);
 
-  const [upcomingAlbum, ...restAlbums] = upcomingAlbums;
+  const [upcomingAlbum] = upcomingAlbums;
 
   const daysUntilUpcomingAlbum = getDaysUntilUpcomingAlbum(
     upcomingAlbum?.scheduledFor,
@@ -98,11 +98,14 @@ async function ClubPageIsMember({
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
           <CardHeader className="flex flex-row justify-between space-y-0 text-sm">
-            <CardTitle>Upcoming Album</CardTitle>
+            <CardTitle>Upcoming album</CardTitle>
             {daysUntilUpcomingAlbum !== null && (
               <span>
-                in {daysUntilUpcomingAlbum}{" "}
-                {daysUntilUpcomingAlbum === 1 ? "day" : "days"}
+                {daysUntilUpcomingAlbum === 0
+                  ? "Today"
+                  : daysUntilUpcomingAlbum === 1
+                    ? "Tomorrow"
+                    : `in ${daysUntilUpcomingAlbum} ${daysUntilUpcomingAlbum === 1 ? "day" : "days"}`}
               </span>
             )}
           </CardHeader>
@@ -218,7 +221,7 @@ async function getUserClubMembership(clubId: number, userId: string) {
     where: (clubMembers, { eq, and }) =>
       and(
         eq(clubMembers.clubId, clubId),
-        eq(clubMembers.userId, userId),
+        eq(clubMembers.clerkUserId, userId),
         eq(clubMembers.isActive, true),
       ),
   });
@@ -229,11 +232,7 @@ async function getUpcomingAlbums(clubId: number, userId: string) {
   const formattedToday = format(new Date(), "yyyy-MM-dd");
 
   return db.query.clubAlbums.findMany({
-    where: (clubAlbums, { and, gte, eq }) =>
-      and(
-        eq(clubAlbums.clubId, clubId),
-        gte(clubAlbums.scheduledFor, formattedToday),
-      ),
+    where: (clubAlbums, { and, eq }) => and(eq(clubAlbums.clubId, clubId)),
     with: {
       album: true,
       club: {
@@ -243,7 +242,7 @@ async function getUpcomingAlbums(clubId: number, userId: string) {
         },
       },
       userProgress: {
-        where: (userProgress, { eq }) => eq(userProgress.userId, userId),
+        where: (userProgress, { eq }) => eq(userProgress.clerkUserId, userId),
       },
     },
     orderBy: (clubAlbums, { asc }) => [asc(clubAlbums.scheduledFor)],

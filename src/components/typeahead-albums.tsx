@@ -121,7 +121,12 @@ export function TypeaheadAlbums({
                         value === album.title ? "opacity-100" : "opacity-0",
                       )}
                     />
-                    {album.title}
+                    <div className="flex flex-col">
+                      <span className="font-semibold">{album.artist}</span>
+                      <span className="text-muted-foreground">
+                        {album.title}
+                      </span>
+                    </div>
                   </CommandItem>
                 ))}
               </CommandGroup>

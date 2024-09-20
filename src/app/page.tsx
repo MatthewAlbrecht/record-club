@@ -39,7 +39,7 @@ async function SignedInHome() {
       </Button>
       <div>
         <h2 className="mb-2 text-xl font-semibold">My clubs</h2>
-        <ul className="flex flex-row flex-wrap">
+        <ul className="flex flex-row flex-wrap gap-2">
           {clubsImAMemberOf.map(({ club }) => (
             <li key={club.id}>
               <Button asChild>
@@ -100,13 +100,12 @@ async function getClubsForUser(userId: string) {
     .select()
     .from(clubMembers)
     .innerJoin(clubs, eq(clubMembers.clubId, clubs.id))
-    .where(and(eq(clubMembers.userId, userId), eq(clubs.isActive, true)));
+    .where(and(eq(clubMembers.clerkUserId, userId), eq(clubs.isActive, true)));
 }
 
 /* TODO @matthewalbrecht: this query is slow and should be optimized */
 async function getUpcomingAlbums(clubIds: number[], userId: string) {
   const formattedToday = format(new Date(), "yyyy-MM-dd");
-
   return db.query.clubAlbums.findMany({
     where: (clubAlbums, { and, gte, inArray }) =>
       and(
@@ -122,7 +121,7 @@ async function getUpcomingAlbums(clubIds: number[], userId: string) {
         },
       },
       userProgress: {
-        where: (userProgress, { eq }) => eq(userProgress.userId, userId),
+        where: (userProgress, { eq }) => eq(userProgress.clerkUserId, userId),
       },
     },
     orderBy: (clubAlbums, { asc }) => [asc(clubAlbums.scheduledFor)],

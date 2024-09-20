@@ -6,10 +6,10 @@ export async function GET(req: NextRequest) {
   const search = searchParams.get("search");
 
   const albums = await db.query.albums.findMany({
-    where: (album, { like, or }) =>
+    where: (album, { ilike, or }) =>
       or(
-        search ? like(album.title, `%${search}%`) : undefined,
-        search ? like(album.artist, `%${search}%`) : undefined,
+        search ? ilike(album.title, `%${search}%`) : undefined,
+        search ? ilike(album.artist, `%${search}%`) : undefined,
       ),
   });
 

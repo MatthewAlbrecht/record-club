@@ -47,7 +47,10 @@ export default async function ProgressPage({
 
   const answers = await db.query.answers.findMany({
     where: (answers, { eq, and }) =>
-      and(eq(answers.clubAlbumId, clubAlbum.id), eq(answers.userId, userId)),
+      and(
+        eq(answers.clubAlbumId, clubAlbum.id),
+        eq(answers.clerkUserId, userId),
+      ),
   });
 
   return (

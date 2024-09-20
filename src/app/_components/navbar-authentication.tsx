@@ -1,5 +1,6 @@
 "use client";
 import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
+import { env } from "~/env";
 
 export function NavbarAuthentication() {
   return (

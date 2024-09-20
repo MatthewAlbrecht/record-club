@@ -24,7 +24,7 @@ export default async function DiscoverPage() {
           db
             .select({ id: clubMembers.clubId })
             .from(clubMembers)
-            .where(eq(clubMembers.userId, userId)),
+            .where(eq(clubMembers.clerkUserId, userId)),
         ),
       ),
   });

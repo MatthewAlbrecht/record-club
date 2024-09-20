@@ -15,7 +15,7 @@ export default async function ClubSettingsPage({
     where: (clubMembers, { eq, and }) =>
       and(
         eq(clubMembers.clubId, Number(params.clubId)),
-        eq(clubMembers.userId, userId),
+        eq(clubMembers.clerkUserId, userId),
         eq(clubMembers.isActive, true),
       ),
   });

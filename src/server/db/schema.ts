@@ -50,6 +50,30 @@ export const clubMemberRoleEnum = pgEnum("club_member_role", [
 /**
  * Tables
  */
+
+export const users = createTable(
+  "user",
+  {
+    id: serial("id").primaryKey(),
+    clerkId: varchar("clerk_id", { length: 256 }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).$onUpdate(
+      () => new Date(),
+    ),
+    username: varchar("username", { length: 20 }),
+    email: varchar("email", { length: 256 }).notNull(),
+    firstName: varchar("first_name", { length: 32 }),
+    lastName: varchar("last_name", { length: 32 }),
+    avatarUrl: varchar("avatar_url", { length: 256 }),
+  },
+  (user) => ({
+    uniqueClerkId: uniqueIndex("unique_clerk_id").on(user.clerkId),
+    uniqueUsername: uniqueIndex("unique_username").on(user.username),
+  }),
+);
+
 export const clubs = createTable(
   "club",
   {
@@ -152,12 +176,9 @@ export const clubAlbums = createTable(
   }),
 );
 
-/**
- * Answers table to store users' responses to questions for each album.
- */
 export const answers = createTable("answer", {
   id: serial("id").primaryKey(),
-  userId: varchar("user_id", { length: 256 }).notNull(),
+  clerkUserId: varchar("clerk_user_id", { length: 256 }).notNull(),
   clubAlbumId: integer("club_album_id")
     .references(() => clubAlbums.id)
     .notNull(),
@@ -193,7 +214,7 @@ export const clubMembers = createTable(
     clubId: integer("club_id")
       .references(() => clubs.id)
       .notNull(),
-    userId: varchar("user_id", { length: 256 }).notNull(),
+    clerkUserId: varchar("clerk_user_id", { length: 256 }).notNull(),
     role: clubMemberRoleEnum("role").default("member").notNull(),
     isActive: boolean("is_active").default(true).notNull(),
     createdAt: timestamp("created_at", { withTimezone: true })
@@ -206,7 +227,7 @@ export const clubMembers = createTable(
   (table) => ({
     uniqueClubUser: uniqueIndex("unique_club_user").on(
       table.clubId,
-      table.userId,
+      table.clerkUserId,
     ),
   }),
 );
@@ -218,7 +239,7 @@ export const userClubAlbumProgress = createTable(
   "user_club_album_progress",
   {
     id: serial("id").primaryKey(),
-    userId: varchar("user_id", { length: 256 }).notNull(),
+    clerkUserId: varchar("clerk_user_id", { length: 256 }).notNull(),
     clubId: integer("club_id")
       .references(() => clubs.id)
       .notNull(),
@@ -239,7 +260,7 @@ export const userClubAlbumProgress = createTable(
   },
   (table) => ({
     uniqueUserClubAlbum: uniqueIndex("unique_user_club_album").on(
-      table.userId,
+      table.clerkUserId,
       table.clubAlbumId,
     ),
   }),

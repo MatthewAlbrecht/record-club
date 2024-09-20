@@ -44,7 +44,7 @@ export const createClub = authActionClient
 
         await trx.insert(clubMembers).values({
           clubId: club[0]!.id,
-          userId: userId,
+          clerkUserId: userId,
           role: "owner",
         });
 
@@ -93,8 +93,17 @@ export const addAlbumToClub = authActionClient
         throw new ActionError("Club not found");
       }
 
-      if (club.ownedById !== userId) {
-        throw new ActionError("You are not the owner of this club");
+      const membership = await db.query.clubMembers.findFirst({
+        where: (clubMember, { eq }) =>
+          eq(clubMember.clubId, clubId) && eq(clubMember.clerkUserId, userId),
+      });
+
+      if (!membership) {
+        throw new ActionError("You are not a member of this club");
+      }
+
+      if (membership.role !== "owner" && membership.role !== "admin") {
+        throw new ActionError("You do not have permission to add albums");
       }
 
       try {
@@ -108,6 +117,7 @@ export const addAlbumToClub = authActionClient
           })
           .returning();
         revalidatePath("/clubs/new");
+        revalidatePath(`/clubs/${clubId}/settings`);
         return { clubAlbum: clubAlbum[0]! };
       } catch (error) {
         if (error instanceof Error) {
@@ -164,6 +174,7 @@ export const deleteClubAlbum = authActionClient
 
     await db.delete(clubAlbums).where(eq(clubAlbums.id, clubAlbumId));
     revalidatePath("/clubs/new");
+    revalidatePath(`/clubs/${clubAlbum.clubId}/settings`);
     return { success: true };
   });
 
@@ -224,7 +235,7 @@ export const joinClubAction = authActionClient
 
     const clubMember = await db.query.clubMembers.findFirst({
       where: (clubMember, { eq }) =>
-        eq(clubMember.clubId, clubId) && eq(clubMember.userId, userId),
+        eq(clubMember.clubId, clubId) && eq(clubMember.clerkUserId, userId),
     });
 
     if (clubMember && clubMember.isActive) {
@@ -246,7 +257,7 @@ export const joinClubAction = authActionClient
         .insert(clubMembers)
         .values({
           clubId,
-          userId,
+          clerkUserId: userId,
           role: "member",
         })
         .returning();
@@ -277,7 +288,7 @@ export const leaveClubAction = authActionClient
   .action(async ({ parsedInput: { clubId }, ctx: { userId } }) => {
     const clubMember = await db.query.clubMembers.findFirst({
       where: (clubMember, { eq }) =>
-        eq(clubMember.clubId, clubId) && eq(clubMember.userId, userId),
+        eq(clubMember.clubId, clubId) && eq(clubMember.clerkUserId, userId),
       with: {
         club: true,
       },
@@ -331,7 +342,7 @@ export const submitClubAlbumProgress = authActionClient
       const clubMember = await db.query.clubMembers.findFirst({
         where: (clubMember, { eq }) =>
           eq(clubMember.clubId, clubAlbum.clubId) &&
-          eq(clubMember.userId, userId),
+          eq(clubMember.clerkUserId, userId),
       });
 
       if (!clubMember) {
@@ -363,7 +374,7 @@ export const submitClubAlbumProgress = authActionClient
             clubId: clubAlbum.clubId,
             albumId: clubAlbum.albumId,
             questionId: questionId,
-            userId,
+            clerkUserId: userId,
           } satisfies Partial<SelectAnswer>;
 
           if (questionCategory === "short-answer") {
@@ -402,7 +413,7 @@ export const submitClubAlbumProgress = authActionClient
             .insert(userClubAlbumProgressTable)
             .values({
               clubAlbumId,
-              userId,
+              clerkUserId: userId,
               clubId: clubAlbum.clubId,
               albumId: clubAlbum.albumId,
               hasListened,
@@ -410,7 +421,7 @@ export const submitClubAlbumProgress = authActionClient
             })
             .onConflictDoUpdate({
               target: [
-                userClubAlbumProgressTable.userId,
+                userClubAlbumProgressTable.clerkUserId,
                 userClubAlbumProgressTable.clubAlbumId,
               ],
               set: {
