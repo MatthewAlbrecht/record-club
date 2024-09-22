@@ -81,7 +81,7 @@ export const clubs = createTable(
     name: varchar("name", { length: 256 }).notNull(),
     shortDescription: varchar("short_description", { length: 128 }).notNull(),
     longDescription: varchar("long_description", { length: 2048 }).notNull(),
-    imageUrl: varchar("image_url", { length: 256 }),
+    imageId: integer("image_id").references(() => images.id),
     createdById: integer("created_by_id")
       .references(() => users.id)
       .notNull(),
@@ -280,6 +280,15 @@ export const userClubAlbumProgress = createTable(
   }),
 );
 
+export const images = createTable("image", {
+  id: serial("id").primaryKey(),
+  url: varchar("url", { length: 256 }).notNull(),
+  focalPoint: varchar("focal_point", { length: 256 }),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+});
+
 /**
  * Relations
  */
@@ -294,6 +303,10 @@ export const clubsRelations = relations(clubs, ({ many, one }) => ({
   ownedBy: one(users, {
     fields: [clubs.ownedById],
     references: [users.id],
+  }),
+  image: one(images, {
+    fields: [clubs.imageId],
+    references: [images.id],
   }),
 }));
 
@@ -397,6 +410,9 @@ export type InsertClubQuestion = InferInsertModel<typeof clubQuestions>;
 
 export type SelectAnswer = InferSelectModel<typeof answers>;
 export type InsertAnswer = InferInsertModel<typeof answers>;
+
+export type SelectClubMember = InferSelectModel<typeof clubMembers>;
+export type InsertClubMember = InferInsertModel<typeof clubMembers>;
 
 export type SelectUserClubAlbumProgress = InferSelectModel<
   typeof userClubAlbumProgress

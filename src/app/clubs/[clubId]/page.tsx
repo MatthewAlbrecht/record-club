@@ -45,11 +45,13 @@ export default async function RecordClubHome({
   );
 }
 
+type Club = NonNullable<Awaited<ReturnType<typeof getClubWithAlbums>>>;
+
 async function ClubPageIsMember({
   club,
   isOwner,
 }: {
-  club: SelectClub;
+  club: Club;
   isOwner: boolean;
 }) {
   const user = await getAuthenticatedUser();
@@ -65,9 +67,34 @@ async function ClubPageIsMember({
   );
 
   return (
-    <div className="container mx-auto space-y-6 p-4">
-      <header className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
+    <div className="@container">
+      <div className="relative -mx-main-inner -mt-main-inner">
+        {club.image ? (
+          <img
+            src={club.image.url}
+            alt={club.name}
+            className="@lg:h-96rounded-tl-lg h-48 w-full rounded-tr-lg object-cover @md:h-64"
+            style={{
+              objectPosition: club.image.focalPoint ?? "center",
+            }}
+          />
+        ) : (
+          <div className="aspect-video h-64"></div>
+        )}
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/80">
+          <div className="flex h-full flex-col justify-end p-main-inner">
+            <div>
+              <h1 className="text-2xl font-bold text-slate-50">{club.name}</h1>
+              <p className="text-muted-foreground text-slate-300">
+                {club.shortDescription}
+              </p>
+            </div>
+            <div></div>
+          </div>
+        </div>
+      </div>
+      {/* <header className="flex items-center justify-between">
+        <div> 
           <Avatar className="h-20 w-20">
             <AvatarImage src={undefined} alt={club.name} />
             <AvatarFallback>
@@ -183,7 +210,7 @@ async function ClubPageIsMember({
             ),
           )}
         </ul>
-      </div>
+      </div> */}
     </div>
   );
 }
@@ -209,6 +236,7 @@ async function getClubWithAlbums(clubId: number) {
   return db.query.clubs.findFirst({
     where: (clubs, { eq }) => eq(clubs.id, clubId),
     with: {
+      image: true,
       clubAlbums: {
         with: {
           album: true,

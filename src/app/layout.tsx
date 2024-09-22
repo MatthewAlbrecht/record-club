@@ -32,8 +32,8 @@ export default function RootLayout({
             <NavbarMobileHeader />
             <NavbarMobileFooter />
 
-            <main className="fixed inset-2 bottom-16 top-12 overflow-auto overflow-x-hidden rounded-lg bg-white py-6 shadow lg:bottom-2 lg:left-72 lg:top-2 lg:rounded-2xl">
-              <div className="space-y-3 px-4 sm:px-6 lg:px-8">{children}</div>
+            <main className="fixed inset-2 bottom-16 top-12 overflow-auto overflow-x-hidden rounded-lg bg-white p-main-inner shadow lg:bottom-2 lg:left-72 lg:top-2 lg:rounded-2xl">
+              {children}
             </main>
             <Toaster />
           </body>

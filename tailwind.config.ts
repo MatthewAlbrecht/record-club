@@ -56,13 +56,35 @@ export default {
           "5": "hsl(var(--chart-5))",
         },
       },
+      spacing: {
+        "main-inner": "var(--main-inner-padding)",
+      },
     },
   },
   plugins: [
     require("tailwindcss-animate"),
+    require("@tailwindcss/container-queries"),
     require("tailwind-scrollbar")({
       nocompatible: true,
       preferredStrategy: "pseudoelements",
     }),
+    // @ts-ignore
+    function ({ addBase }) {
+      addBase({
+        ":root": {
+          "--main-inner-padding": "1rem", // Default padding (equivalent to p-4)
+        },
+        "@screen sm": {
+          ":root": {
+            "--main-inner-padding": "1.5rem", // Equivalent to p-6
+          },
+        },
+        "@screen lg": {
+          ":root": {
+            "--main-inner-padding": "2rem", // Equivalent to p-8
+          },
+        },
+      });
+    },
   ],
 } satisfies Config;
