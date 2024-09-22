@@ -30,8 +30,8 @@ export const createClub = authActionClient
       parsedInput: { name, shortDescription, longDescription },
       ctx: { userId },
     }) => {
-      await db.transaction(async (trx) => {
-        const club = await trx
+      const club = await db.transaction(async (trx) => {
+        const newClub = await trx
           .insert(clubs)
           .values({
             name,
@@ -43,26 +43,15 @@ export const createClub = authActionClient
           .returning();
 
         await trx.insert(clubMembers).values({
-          clubId: club[0]!.id,
+          clubId: newClub[0]!.id,
           userId,
           role: "owner",
         });
 
-        revalidatePath("/clubs/new");
-        return { club: club[0]! };
+        return newClub[0]!;
       });
-      const club = await db
-        .insert(clubs)
-        .values({
-          name,
-          shortDescription,
-          longDescription,
-          createdById: userId,
-          ownedById: userId,
-        })
-        .returning();
-      revalidatePath("/clubs/new");
-      return { club: club[0]! };
+
+      return { club };
     },
   );
 
@@ -107,7 +96,7 @@ export const addAlbumToClub = authActionClient
       }
 
       try {
-        const clubAlbum = await db
+        const clubAlbumInsert = await db
           .insert(clubAlbums)
           .values({
             clubId,
@@ -115,10 +104,18 @@ export const addAlbumToClub = authActionClient
             scheduledFor: scheduledFor,
             createdById: userId,
           })
-          .returning();
-        revalidatePath("/clubs/new");
+          .returning()
+          .then(([clubAlbum]) => clubAlbum);
+
+        const newClubAlbum = await db.query.clubAlbums.findFirst({
+          where: (clubAlbum, { eq }) => eq(clubAlbum.id, clubAlbumInsert!.id),
+          with: {
+            album: true,
+          },
+        });
+
         revalidatePath(`/clubs/${clubId}/settings`);
-        return { clubAlbum: clubAlbum[0]! };
+        return { clubAlbum: newClubAlbum! };
       } catch (error) {
         if (error instanceof Error) {
           throw new DatabaseError(
@@ -232,6 +229,8 @@ export const joinClubAction = authActionClient
     if (!club) {
       throw new ActionError("Club not found");
     }
+
+    console.log("userId", userId, clubId);
 
     const clubMember = await db.query.clubMembers.findFirst({
       where: (clubMember, { eq }) =>

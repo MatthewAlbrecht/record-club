@@ -4,13 +4,13 @@ import { env } from "~/env";
 
 export function NavbarAuthentication() {
   return (
-    <div>
+    <>
       <SignedIn>
         <UserButton />
       </SignedIn>
       <SignedOut>
         <SignInButton />
       </SignedOut>
-    </div>
+    </>
   );
 }

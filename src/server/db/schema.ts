@@ -81,6 +81,7 @@ export const clubs = createTable(
     name: varchar("name", { length: 256 }).notNull(),
     shortDescription: varchar("short_description", { length: 128 }).notNull(),
     longDescription: varchar("long_description", { length: 2048 }).notNull(),
+    imageUrl: varchar("image_url", { length: 256 }),
     createdById: integer("created_by_id")
       .references(() => users.id)
       .notNull(),
@@ -125,6 +126,7 @@ export const albums = createTable(
 export const questions = createTable("question", {
   id: serial("id").primaryKey(),
   text: varchar("text", { length: 256 }).notNull(),
+  label: varchar("label", { length: 16 }).notNull(),
   category: questionCategoryEnum("category").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true })
     .default(sql`CURRENT_TIMESTAMP`)

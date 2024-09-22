@@ -6,7 +6,6 @@ import { db } from "../db";
 import { albums, clubs } from "../db/schema";
 import { DatabaseError, PGErrorCodes } from "./utils";
 
-// This schema is used to validate input from client.
 const createAlbumSchema = z.object({
   title: z.string().min(1),
   artist: z.string().min(1),
@@ -40,7 +39,7 @@ export const createAlbum = authActionClient
             releaseDay,
           })
           .returning();
-
+        console.log("album", album);
         return { album: album[0]! };
       } catch (error) {
         if (error instanceof Error) {

@@ -54,7 +54,7 @@ export default async function ProgressPage({
   return (
     <div className="container mx-auto p-4">
       <div className="flex items-center space-x-4">
-        <div className="h-32 w-32 rounded-sm bg-gray-200"></div>
+        <div className="h-32 w-32 rounded-sm bg-slate-200"></div>
         <div>
           <h1 className="text-2xl font-bold">{clubAlbum.album.artist}</h1>
           <p className="text-muted-foreground">{clubAlbum.album.title}</p>

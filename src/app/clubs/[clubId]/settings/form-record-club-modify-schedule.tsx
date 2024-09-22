@@ -1,6 +1,6 @@
 "use client";
 
-import { ClubWithAlbums } from "../_queries";
+import { ClubWithAlbums } from "./_queries";
 import { Calendar } from "~/components/ui/calendar";
 import { useState } from "react";
 import { SelectAlbum } from "~/server/db/schema";
@@ -10,7 +10,7 @@ import { useAction } from "next-safe-action/hooks";
 import { addAlbumToClub, deleteClubAlbum } from "~/server/api/clubs-actions";
 import { toast } from "sonner";
 import { TrashIcon } from "lucide-react";
-import { Input } from "~/components/ui/input";
+
 import { Button } from "~/components/ui/button";
 
 export function FormRecordClubModifySchedule({
@@ -87,7 +87,7 @@ export function FormRecordClubModifySchedule({
                   .map((clubAlbum) => parseISO(clubAlbum.scheduledFor!)) ?? [],
             }}
             modifiersClassNames={{
-              booked: "bg-gray-200 text-gray-800 opacity-50",
+              booked: "bg-slate-200 text-slate-800 opacity-50",
             }}
           />
 
@@ -100,13 +100,13 @@ export function FormRecordClubModifySchedule({
         </div>
         <div className="w-full">
           {upcomingClubAlbums && upcomingClubAlbums.length > 0 ? (
-            <ul className="space-y-2 divide-y-[1px] divide-gray-100">
+            <ul className="space-y-2 divide-y-[1px] divide-slate-100">
               {upcomingClubAlbums.map((clubAlbum) => (
                 <li
                   key={clubAlbum.id}
                   className={`flex items-start justify-between gap-3 py-2 ${isDeleting && deleteInput.clubAlbumId === clubAlbum.id ? "opacity-50" : ""}`}
                 >
-                  <span className="relative top-1 text-sm text-gray-500">
+                  <span className="relative top-1 text-sm text-slate-500">
                     {clubAlbum.scheduledFor
                       ? format(parseISO(clubAlbum.scheduledFor), "M/d")
                       : "Not scheduled"}
@@ -115,7 +115,7 @@ export function FormRecordClubModifySchedule({
                     <span className="font-medium">
                       {clubAlbum.album.artist}
                     </span>
-                    <span className="italic text-gray-800">
+                    <span className="italic text-slate-800">
                       {clubAlbum.album.title}
                     </span>
                   </span>
@@ -136,7 +136,7 @@ export function FormRecordClubModifySchedule({
               ))}
             </ul>
           ) : (
-            <p className="text-sm text-gray-500">No albums scheduled yet.</p>
+            <p className="text-sm text-slate-500">No albums scheduled yet.</p>
           )}
         </div>
       </div>

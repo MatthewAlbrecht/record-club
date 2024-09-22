@@ -66,7 +66,6 @@ export function TypeaheadAlbums({
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState("");
   const [search, setSearch] = useDebouncedState("", 300);
-  const [addedAlbums, setAddedAlbums] = useState<SelectAlbum[]>([]);
 
   const { data } = useAlbumsQuery({ search });
 
@@ -88,7 +87,7 @@ export function TypeaheadAlbums({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="min-w-[300px] justify-between"
+          className="w-full justify-between"
         >
           {selected ? selected.title : "Select album..."}
           <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -163,6 +162,7 @@ function EmptyCommandList({
 
   const { execute } = useAction(createAlbum, {
     onSuccess: ({ data }) => {
+      console.log("data", data);
       toast.success(`${data?.album.title} added`);
       setOpen(false);
       onAlbumAdd?.(data!.album);

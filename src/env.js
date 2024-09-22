@@ -19,6 +19,7 @@ export const env = createEnv({
     POSTGRES_HOST: z.string(),
     POSTGRES_PASSWORD: z.string(),
     POSTGRES_DATABASE: z.string(),
+    BLOB_READ_WRITE_TOKEN: z.string(),
   },
 
   /**
@@ -50,6 +51,7 @@ export const env = createEnv({
     POSTGRES_HOST: process.env.POSTGRES_HOST,
     POSTGRES_PASSWORD: process.env.POSTGRES_PASSWORD,
     POSTGRES_DATABASE: process.env.POSTGRES_DATABASE,
+    BLOB_READ_WRITE_TOKEN: process.env.BLOB_READ_WRITE_TOKEN,
     NEXT_PUBLIC_CLERK_SIGN_IN_FORCE_REDIRECT_URL:
       process.env.NEXT_PUBLIC_CLERK_SIGN_IN_FORCE_REDIRECT_URL,
     NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL:

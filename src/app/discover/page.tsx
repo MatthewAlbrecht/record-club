@@ -3,7 +3,6 @@ import { db } from "~/server/db";
 import { clubMembers } from "~/server/db/schema";
 import {
   Card,
-  CardContent,
   CardDescription,
   CardFooter,
   CardHeader,

@@ -18,9 +18,7 @@ import { notFound } from "next/navigation";
 import { SelectAlbum, SelectClub, SelectClubAlbum } from "~/server/db/schema";
 import { auth } from "@clerk/nextjs/server";
 import Link from "next/link";
-import ButtonLeaveClub, {
-  ButtonJoinClub,
-} from "./_components/button-club-actions";
+import ButtonLeaveClub, { ButtonJoinClub } from "./button-club-actions";
 import { differenceInDays, format, isAfter, parseISO } from "date-fns";
 import { getAuthenticatedUser } from "~/server/api/queries";
 
@@ -116,7 +114,7 @@ async function ClubPageIsMember({
           <CardContent className="flex items-center space-x-4">
             {upcomingAlbum ? (
               <>
-                <div className="h-32 w-32 rounded-sm bg-gray-200"></div>
+                <div className="h-32 w-32 rounded-sm bg-slate-200"></div>
                 <div>
                   <h3 className="text-xl font-semibold">
                     {upcomingAlbum?.album.artist}

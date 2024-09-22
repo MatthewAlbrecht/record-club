@@ -2,7 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { notFound } from "next/navigation";
 import { db } from "~/server/db";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
-import { FormRecordClubModifySchedule } from "./_components/form-record-club-modify-schedule";
+import { FormRecordClubModifySchedule } from "./form-record-club-modify-schedule";
 import { getClubWithAlbums } from "./_queries";
 import { getAuthenticatedUser } from "~/server/api/queries";
 
