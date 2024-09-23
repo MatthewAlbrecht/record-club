@@ -1,38 +1,15 @@
 import { Button } from "~/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
-import { Badge } from "~/components/ui/badge";
-import {
-  Calendar,
-  Music,
-  Users,
-  Share2,
-  Settings,
-  NotebookPen,
-  Table,
-  ChartColumnStacked,
-  ArrowRight,
-} from "lucide-react";
+
+import { Settings, ArrowRight } from "lucide-react";
 import { db } from "~/server/db";
 import { notFound } from "next/navigation";
-import {
-  SelectAlbum,
-  SelectClub,
-  SelectClubAlbum,
-  SelectUserClubAlbumProgress,
-} from "~/server/db/schema";
-import { auth } from "@clerk/nextjs/server";
+import { SelectClub } from "~/server/db/schema";
 import Link from "next/link";
-import ButtonLeaveClub, { ButtonJoinClub } from "./button-club-actions";
-import {
-  differenceInDays,
-  format,
-  formatRelative,
-  isAfter,
-  parseISO,
-} from "date-fns";
+import { ButtonJoinClub } from "./button-club-actions";
+import { differenceInDays, format } from "date-fns";
 import { getAuthenticatedUser } from "~/server/api/queries";
 import { Routes } from "~/lib/routes";
+import Image from "next/image";
 
 export default async function RecordClubHome({
   params: { clubId },
@@ -74,14 +51,17 @@ async function ClubPageIsMember({
     <div className="@container">
       <div className="relative -mx-main-inner -mt-main-inner">
         {club.image ? (
-          <img
-            src={club.image.url}
-            alt={club.name}
-            className="@lg:h-96rounded-tl-lg h-48 w-full rounded-tr-lg object-cover @md:h-64"
-            style={{
-              objectPosition: club.image.focalPoint ?? "center",
-            }}
-          />
+          <div className="relative h-48 w-full @md:h-64 @lg:h-96">
+            <Image
+              src={club.image.url}
+              alt={club.name}
+              fill
+              className="object-cover"
+              style={{
+                objectPosition: club.image.focalPoint ?? "center",
+              }}
+            />
+          </div>
         ) : (
           <div className="aspect-video h-64"></div>
         )}
@@ -102,8 +82,8 @@ async function ClubPageIsMember({
               )}
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-slate-50">{club.name}</h1>
-              <p className="max-w-prose text-muted-foreground text-slate-300">
+              <h1 className="text-5xl font-bold text-slate-50">{club.name}</h1>
+              <p className="mt-3 max-w-prose text-xl text-muted-foreground text-slate-300">
                 {club.shortDescription}
               </p>
             </div>

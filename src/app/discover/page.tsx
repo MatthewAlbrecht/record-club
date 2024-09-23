@@ -1,4 +1,3 @@
-import { auth } from "@clerk/nextjs/server";
 import { db } from "~/server/db";
 import { clubMembers } from "~/server/db/schema";
 import {
@@ -12,6 +11,7 @@ import { Button } from "~/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { getAuthenticatedUser } from "~/server/api/queries";
+import Image from "next/image";
 
 export default async function DiscoverPage() {
   const user = await getAuthenticatedUser();
@@ -34,35 +34,40 @@ export default async function DiscoverPage() {
 
   return clubsImNotAMemberOf.length > 0 ? (
     <div className="@container">
-      <div className="grid grid-cols-1 gap-4 @2xl:grid-cols-2 @5xl:grid-cols-3">
+      <h3 className="mb-6 text-base font-semibold leading-6 text-slate-900">
+        Popular clubs
+      </h3>
+
+      <div className="grid grid-cols-2 gap-4 @2xl:grid-cols-3 @5xl:grid-cols-4">
         {clubsImNotAMemberOf.map((club) => (
           <Card
             key={club.id}
-            className="flex flex-col justify-between overflow-hidden"
+            className="flex flex-col overflow-hidden bg-black shadow-lg @container"
           >
             {club.image ? (
-              <img
-                src={club.image.url}
-                alt={club.name}
-                className="h-48 w-full object-cover"
-                style={{
-                  objectPosition: club.image.focalPoint ?? "center",
-                }}
-              />
+              <div className="relative h-40 w-full">
+                <Image
+                  src={club.image.url}
+                  alt={club.name}
+                  className="object-cover"
+                  fill
+                  style={{
+                    objectPosition: club.image.focalPoint ?? "center",
+                  }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/50"></div>
+              </div>
             ) : (
               <div className="h-48 w-full bg-slate-100" />
             )}
-            <CardHeader className="pt-3">
-              <CardTitle className="mt-2 text-lg">{club.name}</CardTitle>
-              <CardDescription>{club.shortDescription}</CardDescription>
+            <CardHeader className="p-4 pt-2 @xs:p-5 @xs:pt-3">
+              <CardTitle className="mt-2 text-base text-slate-100">
+                {club.name}
+              </CardTitle>
+              <CardDescription className="text-sm text-slate-300">
+                {club.shortDescription}
+              </CardDescription>
             </CardHeader>
-            <CardFooter className="flex justify-end">
-              <Button variant="outline" asChild>
-                <Link href={`/clubs/${club.id}`}>
-                  <ArrowRight />
-                </Link>
-              </Button>
-            </CardFooter>
           </Card>
         ))}
       </div>
