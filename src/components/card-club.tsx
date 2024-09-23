@@ -31,10 +31,9 @@ export function CardClub({
               objectPosition: club.image.focalPoint ?? "center",
             }}
           />
-          {/* <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/50"></div> */}
         </div>
       ) : (
-        <div className="h-48 w-full bg-slate-100" />
+        <div className="h-40 w-full bg-gradient-to-bl from-slate-50 to-slate-200" />
       )}
       <CardHeader className="p-4 pt-2 @xs:p-5 @xs:pt-3">
         <CardTitle className="mt-2 text-base text-slate-800">

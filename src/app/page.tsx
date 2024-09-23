@@ -37,6 +37,11 @@ async function SignedInHome() {
   const clubIds = clubsImAMemberOf.map(({ club }) => club.id);
   const upcomingAlbums = await getUpcomingAlbums(clubIds, user!.id);
 
+  console.log(
+    "clubsImAMemberOf",
+    clubsImAMemberOf.map(({ club }) => club.name),
+  );
+
   return (
     <div className="flex flex-col gap-10 @container">
       <Link href={Routes.NewClub} className="max-w-96">
@@ -78,7 +83,7 @@ async function getClubsForUser(userId: number) {
     .select()
     .from(clubMembers)
     .innerJoin(clubs, eq(clubMembers.clubId, clubs.id))
-    .innerJoin(images, eq(clubs.imageId, images.id))
+    .leftJoin(images, eq(clubs.imageId, images.id))
     .where(and(eq(clubMembers.userId, userId), eq(clubs.isActive, true)));
 }
 

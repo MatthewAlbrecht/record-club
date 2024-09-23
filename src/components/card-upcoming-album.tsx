@@ -29,7 +29,7 @@ export function CardUpcomingAlbum({
         }
         className="-mx-2 flex h-full flex-row items-center gap-2 rounded-md bg-slate-50 p-2 hover:bg-slate-100"
       >
-        <div className="h-24 w-24 flex-shrink-0 rounded-sm bg-slate-200"></div>
+        <div className="h-24 w-24 flex-shrink-0 rounded-sm bg-gradient-to-bl from-slate-100 to-slate-200"></div>
         <div className="flex h-full flex-grow flex-col justify-between overflow-hidden py-2">
           <div className="min-w-0">
             <h3 className="overflow-hidden text-ellipsis whitespace-nowrap text-lg font-medium text-slate-700">

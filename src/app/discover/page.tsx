@@ -2,6 +2,8 @@ import { db } from "~/server/db";
 import { clubMembers } from "~/server/db/schema";
 import { getAuthenticatedUser } from "~/server/api/queries";
 import { CardClub } from "~/components/card-club";
+import Link from "next/link";
+import { Routes } from "~/lib/routes";
 
 export default async function DiscoverPage() {
   const user = await getAuthenticatedUser();
@@ -16,7 +18,9 @@ export default async function DiscoverPage() {
 
       <div className="grid grid-cols-2 gap-4 @2xl:grid-cols-3 @5xl:grid-cols-4">
         {clubsImNotAMemberOf.map((club) => (
-          <CardClub key={club.id} club={club} />
+          <Link key={club.id} href={Routes.Club(club.id)}>
+            <CardClub key={club.id} club={club} />
+          </Link>
         ))}
       </div>
     </div>
