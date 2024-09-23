@@ -21,7 +21,7 @@ export function NavbarMobileFooter() {
   const pathname = usePathname();
 
   return (
-    <div className="fixed inset-x-2 bottom-2 z-40 flex h-12 items-center justify-around rounded-lg bg-white/50 sm:px-2 lg:hidden">
+    <div className="fixed inset-x-2 bottom-2 z-40 flex h-12 items-center justify-around divide-x-[1px] divide-slate-500/15 rounded-lg bg-white shadow-md sm:px-2 lg:hidden">
       {navigation.map((item) => {
         const isCurrent = pathname === item.href;
         return (

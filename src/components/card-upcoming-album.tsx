@@ -1,4 +1,4 @@
-import { differenceInDays, format } from "date-fns";
+import { differenceInDays, format, parseISO } from "date-fns";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import {
@@ -58,7 +58,7 @@ function getRelativeDateLabel(scheduledFor: string | null | undefined) {
   const today = new Date(
     new Date().toLocaleString("en-US", { timeZone: "UTC" }),
   );
-  const scheduledDate = scheduledFor ? new Date(scheduledFor) : null;
+  const scheduledDate = scheduledFor ? parseISO(scheduledFor) : null;
 
   if (!scheduledDate) return null;
 
