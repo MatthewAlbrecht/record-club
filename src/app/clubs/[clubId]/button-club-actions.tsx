@@ -49,6 +49,13 @@ export function ButtonJoinClub({
     onSuccess: ({ data }) => {
       toast.success(`You have joined ${data?.club.name}`);
     },
+    onError: ({ error }) => {
+      if (error.serverError) {
+        toast.error(error.serverError);
+      } else {
+        toast.error("Unable to join club");
+      }
+    },
   });
   function handleJoinClub() {
     execute({ clubId });
@@ -57,7 +64,7 @@ export function ButtonJoinClub({
   return (
     <Button onClick={handleJoinClub} variant="outline" className={className}>
       <UserPlus className="mr-2 h-4 w-4" />
-      Join Club
+      Join club
     </Button>
   );
 }

@@ -222,6 +222,7 @@ export const joinClubAction = authActionClient
   .metadata({ actionName: "joinClub" })
   .schema(joinClubSchema)
   .action(async ({ parsedInput: { clubId }, ctx: { userId } }) => {
+    console.log("userId", userId, clubId);
     const club = await db.query.clubs.findFirst({
       where: (club, { eq }) => eq(club.id, clubId),
     });
@@ -233,8 +234,8 @@ export const joinClubAction = authActionClient
     console.log("userId", userId, clubId);
 
     const clubMember = await db.query.clubMembers.findFirst({
-      where: (clubMember, { eq }) =>
-        eq(clubMember.clubId, clubId) && eq(clubMember.userId, userId),
+      where: (clubMember, { eq, and }) =>
+        and(eq(clubMember.clubId, clubId), eq(clubMember.userId, userId)),
     });
 
     if (clubMember && clubMember.isActive) {
