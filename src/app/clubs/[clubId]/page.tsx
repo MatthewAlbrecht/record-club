@@ -15,12 +15,24 @@ import {
 } from "lucide-react";
 import { db } from "~/server/db";
 import { notFound } from "next/navigation";
-import { SelectAlbum, SelectClub, SelectClubAlbum } from "~/server/db/schema";
+import {
+  SelectAlbum,
+  SelectClub,
+  SelectClubAlbum,
+  SelectUserClubAlbumProgress,
+} from "~/server/db/schema";
 import { auth } from "@clerk/nextjs/server";
 import Link from "next/link";
 import ButtonLeaveClub, { ButtonJoinClub } from "./button-club-actions";
-import { differenceInDays, format, isAfter, parseISO } from "date-fns";
+import {
+  differenceInDays,
+  format,
+  formatRelative,
+  isAfter,
+  parseISO,
+} from "date-fns";
 import { getAuthenticatedUser } from "~/server/api/queries";
+import { Routes } from "~/lib/routes";
 
 export default async function RecordClubHome({
   params: { clubId },
@@ -35,11 +47,12 @@ export default async function RecordClubHome({
 
   const user = await getAuthenticatedUser();
   const membership = await getUserClubMembership(club.id, user.id);
-  const isOwner = club.ownedById === user.id;
+  const isOwnerOrAdmin =
+    club.ownedById === user.id || membership?.role === "admin";
   const isMember = !!membership;
 
   return isMember ? (
-    <ClubPageIsMember club={club} isOwner={isOwner} />
+    <ClubPageIsMember club={club} isOwnerOrAdmin={isOwnerOrAdmin} />
   ) : (
     <ClubPageIsNotMember club={club} />
   );
@@ -49,22 +62,13 @@ type Club = NonNullable<Awaited<ReturnType<typeof getClubWithAlbums>>>;
 
 async function ClubPageIsMember({
   club,
-  isOwner,
+  isOwnerOrAdmin,
 }: {
   club: Club;
-  isOwner: boolean;
+  isOwnerOrAdmin: boolean;
 }) {
   const user = await getAuthenticatedUser();
   const upcomingAlbums = await getUpcomingAlbums(club.id, user.id);
-
-  const upcomingAlbum = upcomingAlbums.find(
-    (album) =>
-      album.scheduledFor && isAfter(parseISO(album.scheduledFor), new Date()),
-  );
-
-  const daysUntilUpcomingAlbum = getDaysUntilUpcomingAlbum(
-    upcomingAlbum?.scheduledFor,
-  );
 
   return (
     <div className="@container">
@@ -82,136 +86,89 @@ async function ClubPageIsMember({
           <div className="aspect-video h-64"></div>
         )}
         <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/80">
-          <div className="flex h-full flex-col justify-end p-main-inner">
+          <div className="flex h-full flex-col justify-between p-main-inner">
+            <div className="flex flex-row justify-end">
+              {isOwnerOrAdmin && (
+                <Button
+                  asChild
+                  variant="ghost"
+                  aria-label="Club Settings"
+                  className="px-2 text-slate-50"
+                >
+                  <Link href={Routes.ClubSettings(club.id)}>
+                    <Settings className="h-6 w-6" />
+                  </Link>
+                </Button>
+              )}
+            </div>
             <div>
-              <h1 className="text-2xl font-bold text-slate-50">{club.name}</h1>
-              <p className="text-muted-foreground text-slate-300">
+              <h1 className="text-3xl font-bold text-slate-50">{club.name}</h1>
+              <p className="max-w-prose text-muted-foreground text-slate-300">
                 {club.shortDescription}
               </p>
             </div>
-            <div></div>
           </div>
         </div>
       </div>
-      {/* <header className="flex items-center justify-between">
-        <div> 
-          <Avatar className="h-20 w-20">
-            <AvatarImage src={undefined} alt={club.name} />
-            <AvatarFallback>
-              {club.name
-                .split(" ")
-                .map((word) => word[0])
-                .join("")
-                .slice(0, 3)}
-            </AvatarFallback>
-          </Avatar>
-          <div>
-            <h1 className="text-2xl font-bold">{club.name}</h1>
-            <p className="text-muted-foreground">{club.shortDescription}</p>
-          </div>
-        </div>
-        {isOwner && (
-          <Button
-            asChild
-            variant="ghost"
-            aria-label="Club Settings"
-            className="px-2"
-          >
-            <Link href={`/clubs/${club.id}/settings`}>
-              <Settings className="h-6 w-6" />
-            </Link>
-          </Button>
-        )}
-      </header>
-
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card>
-          <CardHeader className="flex flex-row justify-between space-y-0 text-sm">
-            <CardTitle>Upcoming album</CardTitle>
-            {daysUntilUpcomingAlbum !== null && (
-              <span>
-                {daysUntilUpcomingAlbum === 0
-                  ? "Today"
-                  : daysUntilUpcomingAlbum === 1
-                    ? "Tomorrow"
-                    : `in ${daysUntilUpcomingAlbum} ${daysUntilUpcomingAlbum === 1 ? "day" : "days"}`}
-              </span>
-            )}
-          </CardHeader>
-          <CardContent className="flex items-center space-x-4">
-            {upcomingAlbum ? (
-              <>
-                <div className="h-32 w-32 rounded-sm bg-slate-200"></div>
-                <div>
-                  <h3 className="text-xl font-semibold">
-                    {upcomingAlbum?.album.artist}
-                  </h3>
-                  <p className="text-muted-foreground">
-                    {upcomingAlbum?.album.title}
-                  </p>
-
-                  {upcomingAlbum.userProgress[0]?.hasListened ? (
-                    <Button variant="outline" className="mt-2" asChild>
-                      <Link
-                        href={`/clubs/${club.id}/albums/${upcomingAlbum?.id}`}
-                      >
-                        <ChartColumnStacked className="mr-2 h-4 w-4" />
-                        Explore reviews
-                      </Link>
-                    </Button>
-                  ) : (
-                    <Button variant="outline" className="mt-2" asChild>
-                      <Link
-                        href={`/clubs/${club.id}/albums/${upcomingAlbum?.id}/progress`}
-                      >
-                        <NotebookPen className="mr-2 h-4 w-4" />
-                        Track progress
-                      </Link>
-                    </Button>
-                  )}
-                </div>
-              </>
+      <div className="mt-10">
+        <div className="flex flex-col gap-6">
+          <h2 className="text-sm font-medium text-slate-500">
+            Upcoming albums
+          </h2>
+          <ul className="grid grid-cols-1 gap-4 @2xl:grid-cols-2 @2xl:gap-6 @5xl:grid-cols-3 @5xl:gap-8">
+            {upcomingAlbums.length > 0 ? (
+              upcomingAlbums
+                // .slice(0, 3)
+                .map((clubAlbum) => (
+                  <UpcomingAlbums key={clubAlbum.id} clubAlbum={clubAlbum} />
+                ))
             ) : (
               <div className="flex h-full w-full flex-col items-center justify-center text-center">
-                <p className="text-muted-foreground">No upcoming album</p>
+                <p className="text-muted-foreground">No upcoming albums</p>
               </div>
             )}
-          </CardContent>
-        </Card>
-        <ul className="flex flex-col divide-y-[1px]">
-          {upcomingAlbums.map(
-            ({ id, album, club, scheduledFor, userProgress }) => (
-              <li key={album.id} className="flex flex-col py-2">
-                <div className="flex flex-row justify-between">
-                  <p className="font-semibold">{album.artist}</p>
-                  {scheduledFor && (
-                    <p className="text-sm text-muted-foreground">
-                      {format(new Date(scheduledFor), "MMM d")}
-                    </p>
-                  )}
-                </div>
-                <div className="flex flex-row items-center justify-between gap-1">
-                  <p className="text-sm">{album.title}</p>
-                  <Link
-                    href={
-                      userProgress[0]?.hasListened
-                        ? `/clubs/${club.id}/albums/${id}`
-                        : `/clubs/${club.id}/albums/${id}/progress`
-                    }
-                    className="flex flex-row items-center gap-1 text-sm text-accent-foreground"
-                  >
-                    {userProgress[0]?.hasListened
-                      ? "Explore reviews"
-                      : "Track progress"}
-                    <ArrowRight className="h-3 w-3" />
-                  </Link>
-                </div>
-              </li>
-            ),
-          )}
-        </ul>
-      </div> */}
+          </ul>
+        </div>
+      </div>
     </div>
+  );
+}
+
+function UpcomingAlbums({ clubAlbum }: { clubAlbum: ClubAlbum }) {
+  const relativeDate = getRelativeDateLabel(clubAlbum.scheduledFor);
+
+  return (
+    <li key={clubAlbum.id}>
+      <Link
+        href={
+          clubAlbum.userProgress[0]?.hasListened
+            ? `/clubs/${clubAlbum.club.id}/albums/${clubAlbum.id}`
+            : `/clubs/${clubAlbum.club.id}/albums/${clubAlbum.id}/progress`
+        }
+        className="-mx-2 flex h-full flex-row items-center gap-2 rounded-md bg-slate-50 p-2 hover:bg-slate-100"
+      >
+        <div className="h-24 w-24 flex-shrink-0 rounded-sm bg-slate-200"></div>
+        <div className="flex h-full flex-grow flex-col justify-between overflow-hidden py-2">
+          <div className="min-w-0">
+            <h3 className="overflow-hidden text-ellipsis whitespace-nowrap text-lg font-medium text-slate-700">
+              {clubAlbum.album.artist}
+            </h3>
+            <p className="overflow-hidden text-ellipsis whitespace-nowrap text-sm text-slate-500">
+              {clubAlbum.album.title}
+            </p>
+          </div>
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-sm text-slate-500">{relativeDate}</span>
+            <div className="flex flex-row items-center gap-1 text-sm text-slate-500">
+              {clubAlbum.userProgress[0]?.hasListened
+                ? "Explore reviews"
+                : "Track progress"}
+              <ArrowRight className="h-4 w-4" />
+            </div>
+          </div>
+        </div>
+      </Link>
+    </li>
   );
 }
 
@@ -223,13 +180,23 @@ function ClubPageIsNotMember({ club }: { club: SelectClub }) {
   );
 }
 
-function getDaysUntilUpcomingAlbum(scheduledFor: string | null | undefined) {
+function getRelativeDateLabel(scheduledFor: string | null | undefined) {
   const today = new Date(
     new Date().toLocaleString("en-US", { timeZone: "UTC" }),
   );
   const scheduledDate = scheduledFor ? new Date(scheduledFor) : null;
 
-  return scheduledDate ? differenceInDays(scheduledDate, today) : null;
+  if (!scheduledDate) return null;
+
+  const delta = differenceInDays(scheduledDate, today);
+
+  if (delta === 0) return "Today";
+  if (delta === 1) return "Tomorrow";
+  if (delta === -1) return "Yesterday";
+  if (delta < -1 && delta >= -7) return `${-delta} days ago`;
+  if (delta > 1 && delta <= 7) return `in ${delta} days`;
+
+  return format(scheduledDate, "MMM d, yyyy");
 }
 
 async function getClubWithAlbums(clubId: number) {
@@ -278,3 +245,5 @@ async function getUpcomingAlbums(clubId: number, userId: number) {
     orderBy: (clubAlbums, { asc }) => [asc(clubAlbums.scheduledFor)],
   });
 }
+
+type ClubAlbum = Awaited<ReturnType<typeof getUpcomingAlbums>>[number];

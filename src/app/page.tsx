@@ -57,7 +57,7 @@ async function SignedInHome() {
         <ul className="flex flex-col divide-y-[1px]">
           {upcomingAlbums.map(
             ({ id, album, club, scheduledFor, userProgress }) => (
-              <li key={album.id} className="flex flex-col py-2">
+              <li key={id} className="flex flex-col py-2">
                 <div className="flex flex-row justify-between">
                   <p className="font-semibold">{album.artist}</p>
                   {scheduledFor && (

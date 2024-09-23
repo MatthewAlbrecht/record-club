@@ -68,8 +68,8 @@ export function FormRecordClubModifySchedule({
 
   return (
     <div>
-      <div className="flex gap-4">
-        <div>
+      <div className="flex flex-col gap-4 md:flex-row">
+        <div className="w-auto">
           <Calendar
             mode="single"
             selected={selectedDate}
@@ -96,6 +96,15 @@ export function FormRecordClubModifySchedule({
               selected={selectedAlbum}
               setSelected={setSelectedAlbum}
             />
+          </div>
+          <div className="mt-6 flex justify-end">
+            <Button
+              type="submit"
+              disabled={!selectedAlbum || !selectedDate}
+              onClick={handleAddAlbum}
+            >
+              Add album
+            </Button>
           </div>
         </div>
         <div className="w-full">
@@ -139,15 +148,6 @@ export function FormRecordClubModifySchedule({
             <p className="text-sm text-slate-500">No albums scheduled yet.</p>
           )}
         </div>
-      </div>
-      <div className="flex justify-end">
-        <Button
-          type="submit"
-          disabled={!selectedAlbum || !selectedDate}
-          onClick={handleAddAlbum}
-        >
-          Add album
-        </Button>
       </div>
     </div>
   );

@@ -92,7 +92,7 @@ type ColumnDefs = ColumnDef<
 function createColumnsDefs(clubQuestions: Props["clubQuestions"]): ColumnDefs {
   const defs: ColumnDefs = clubQuestions.map((question) => ({
     accessorKey: question.questionId.toString(),
-    header: question.question.text,
+    header: question.question.label,
     cell: ({ row }) => {
       if (question.question.category === "color-picker") {
         return (
