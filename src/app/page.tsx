@@ -5,9 +5,13 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { format } from "date-fns";
 import { db } from "~/server/db";
-import { clubMembers, clubs } from "~/server/db/schema";
+import { clubMembers, clubs, images } from "~/server/db/schema";
 import { eq, and } from "drizzle-orm";
 import { getAuthenticatedUser } from "~/server/api/queries";
+import { CardClub } from "~/components/card-club";
+import { CardUpcomingAlbum } from "~/components/card-upcoming-album";
+import { Routes } from "~/lib/routes";
+import { ButtonCreateLarge } from "~/components/button-create-large";
 
 export const dynamic = "force-dynamic";
 
@@ -34,57 +38,30 @@ async function SignedInHome() {
   const upcomingAlbums = await getUpcomingAlbums(clubIds, user!.id);
 
   return (
-    <div className="flex flex-col gap-4">
-      <Button className="w-[min-content]" asChild>
-        <a href="/clubs/new">Create Club</a>
-      </Button>
+    <div className="flex flex-col gap-10 @container">
+      <Link href={Routes.NewClub} className="max-w-96">
+        <ButtonCreateLarge label="Create your own club" />
+      </Link>
       <div>
-        <h2 className="mb-2 text-xl font-semibold">My clubs</h2>
-        <ul className="flex flex-row flex-wrap gap-2">
-          {clubsImAMemberOf.map(({ club }) => (
-            <li key={club.id}>
-              <Button asChild>
-                <Link href={`/clubs/${club.id}`}>
-                  {club.name} <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
-            </li>
+        <h3 className="mb-4 text-base font-semibold leading-6 text-slate-900">
+          My clubs
+        </h3>
+        <ul className="grid grid-cols-2 gap-4 @2xl:grid-cols-3 @5xl:grid-cols-4">
+          {clubsImAMemberOf.map(({ club, image }) => (
+            <Link key={club.id} href={Routes.Club(club.id)}>
+              <CardClub key={club.id} club={{ ...club, image }} />
+            </Link>
           ))}
         </ul>
       </div>
       <div>
-        <h2 className="text-xl font-semibold">Coming up</h2>
-        <ul className="flex flex-col divide-y-[1px]">
-          {upcomingAlbums.map(
-            ({ id, album, club, scheduledFor, userProgress }) => (
-              <li key={id} className="flex flex-col py-2">
-                <div className="flex flex-row justify-between">
-                  <p className="font-semibold">{album.artist}</p>
-                  {scheduledFor && (
-                    <p className="text-sm text-muted-foreground">
-                      {format(new Date(scheduledFor), "MMM d")}
-                    </p>
-                  )}
-                </div>
-                <div className="flex flex-row items-center justify-between gap-1">
-                  <p className="text-sm">{album.title}</p>
-                  <Link
-                    href={
-                      userProgress[0]?.hasListened
-                        ? `/clubs/${club.id}/albums/${id}`
-                        : `/clubs/${club.id}/albums/${id}/progress`
-                    }
-                    className="flex flex-row items-center gap-1 text-sm text-accent-foreground"
-                  >
-                    {userProgress[0]?.hasListened
-                      ? "Explore reviews"
-                      : "Track progress"}
-                    <ArrowRight className="h-3 w-3" />
-                  </Link>
-                </div>
-              </li>
-            ),
-          )}
+        <h3 className="mb-4 text-base font-semibold leading-6 text-slate-900">
+          Coming up
+        </h3>
+        <ul className="grid grid-cols-1 gap-4 gap-x-8 @2xl:grid-cols-2 @2xl:gap-6 @2xl:gap-x-10 @5xl:grid-cols-3 @5xl:gap-8 @5xl:gap-x-12">
+          {upcomingAlbums.map((clubAlbum) => (
+            <CardUpcomingAlbum key={clubAlbum.id} clubAlbum={clubAlbum} />
+          ))}
         </ul>
       </div>
     </div>
@@ -101,6 +78,7 @@ async function getClubsForUser(userId: number) {
     .select()
     .from(clubMembers)
     .innerJoin(clubs, eq(clubMembers.clubId, clubs.id))
+    .innerJoin(images, eq(clubs.imageId, images.id))
     .where(and(eq(clubMembers.userId, userId), eq(clubs.isActive, true)));
 }
 

@@ -90,6 +90,7 @@ export const clubs = createTable(
       .notNull(),
     clubType: clubTypeEnum("club_type").notNull().default("live"),
     isActive: boolean("is_active").default(false).notNull(),
+    isPublic: boolean("is_public").default(true).notNull(),
     createdAt: timestamp("created_at", { withTimezone: true })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
@@ -420,3 +421,6 @@ export type SelectUserClubAlbumProgress = InferSelectModel<
 export type InsertUserClubAlbumProgress = InferInsertModel<
   typeof userClubAlbumProgress
 >;
+
+export type SelectImage = InferSelectModel<typeof images>;
+export type InsertImage = InferInsertModel<typeof images>;

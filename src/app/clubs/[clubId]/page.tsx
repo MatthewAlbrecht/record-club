@@ -1,15 +1,14 @@
 import { Button } from "~/components/ui/button";
-
-import { Settings, ArrowRight } from "lucide-react";
+import { Settings } from "lucide-react";
 import { db } from "~/server/db";
 import { notFound } from "next/navigation";
 import { SelectClub } from "~/server/db/schema";
 import Link from "next/link";
 import { ButtonJoinClub } from "./button-club-actions";
-import { differenceInDays, format } from "date-fns";
 import { getAuthenticatedUser } from "~/server/api/queries";
 import { Routes } from "~/lib/routes";
 import Image from "next/image";
+import { CardUpcomingAlbum } from "~/components/card-upcoming-album";
 
 export default async function RecordClubHome({
   params: { clubId },
@@ -95,13 +94,11 @@ async function ClubPageIsMember({
           <h2 className="text-sm font-medium text-slate-500">
             Upcoming albums
           </h2>
-          <ul className="grid grid-cols-1 gap-4 @2xl:grid-cols-2 @2xl:gap-6 @5xl:grid-cols-3 @5xl:gap-8">
+          <ul className="grid grid-cols-1 gap-4 gap-x-8 @2xl:grid-cols-2 @2xl:gap-6 @2xl:gap-x-10 @5xl:grid-cols-3 @5xl:gap-8 @5xl:gap-x-12">
             {upcomingAlbums.length > 0 ? (
-              upcomingAlbums
-                // .slice(0, 3)
-                .map((clubAlbum) => (
-                  <UpcomingAlbums key={clubAlbum.id} clubAlbum={clubAlbum} />
-                ))
+              upcomingAlbums.map((clubAlbum) => (
+                <CardUpcomingAlbum key={clubAlbum.id} clubAlbum={clubAlbum} />
+              ))
             ) : (
               <div className="flex h-full w-full flex-col items-center justify-center text-center">
                 <p className="text-muted-foreground">No upcoming albums</p>
@@ -114,69 +111,12 @@ async function ClubPageIsMember({
   );
 }
 
-function UpcomingAlbums({ clubAlbum }: { clubAlbum: ClubAlbum }) {
-  const relativeDate = getRelativeDateLabel(clubAlbum.scheduledFor);
-
-  return (
-    <li key={clubAlbum.id}>
-      <Link
-        href={
-          clubAlbum.userProgress[0]?.hasListened
-            ? `/clubs/${clubAlbum.club.id}/albums/${clubAlbum.id}`
-            : `/clubs/${clubAlbum.club.id}/albums/${clubAlbum.id}/progress`
-        }
-        className="-mx-2 flex h-full flex-row items-center gap-2 rounded-md bg-slate-50 p-2 hover:bg-slate-100"
-      >
-        <div className="h-24 w-24 flex-shrink-0 rounded-sm bg-slate-200"></div>
-        <div className="flex h-full flex-grow flex-col justify-between overflow-hidden py-2">
-          <div className="min-w-0">
-            <h3 className="overflow-hidden text-ellipsis whitespace-nowrap text-lg font-medium text-slate-700">
-              {clubAlbum.album.artist}
-            </h3>
-            <p className="overflow-hidden text-ellipsis whitespace-nowrap text-sm text-slate-500">
-              {clubAlbum.album.title}
-            </p>
-          </div>
-          <div className="flex items-center justify-between gap-2">
-            <span className="text-sm text-slate-500">{relativeDate}</span>
-            <div className="flex flex-row items-center gap-1 text-sm text-slate-500">
-              {clubAlbum.userProgress[0]?.hasListened
-                ? "Explore reviews"
-                : "Track progress"}
-              <ArrowRight className="h-4 w-4" />
-            </div>
-          </div>
-        </div>
-      </Link>
-    </li>
-  );
-}
-
 function ClubPageIsNotMember({ club }: { club: SelectClub }) {
   return (
     <div>
       <ButtonJoinClub clubId={club.id} className="ml-6" />
     </div>
   );
-}
-
-function getRelativeDateLabel(scheduledFor: string | null | undefined) {
-  const today = new Date(
-    new Date().toLocaleString("en-US", { timeZone: "UTC" }),
-  );
-  const scheduledDate = scheduledFor ? new Date(scheduledFor) : null;
-
-  if (!scheduledDate) return null;
-
-  const delta = differenceInDays(scheduledDate, today);
-
-  if (delta === 0) return "Today";
-  if (delta === 1) return "Tomorrow";
-  if (delta === -1) return "Yesterday";
-  if (delta < -1 && delta >= -7) return `${-delta} days ago`;
-  if (delta > 1 && delta <= 7) return `in ${delta} days`;
-
-  return format(scheduledDate, "MMM d, yyyy");
 }
 
 async function getClubWithAlbums(clubId: number) {
@@ -206,8 +146,6 @@ async function getUserClubMembership(clubId: number, userId: number) {
 
 /* TODO @matthewalbrecht: this query is slow and should be optimized */
 async function getUpcomingAlbums(clubId: number, userId: number) {
-  const formattedToday = format(new Date(), "yyyy-MM-dd");
-
   return db.query.clubAlbums.findMany({
     where: (clubAlbums, { and, eq }) => and(eq(clubAlbums.clubId, clubId)),
     with: {
