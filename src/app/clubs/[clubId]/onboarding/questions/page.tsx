@@ -1,22 +1,22 @@
-import { db } from "~/server/db";
-import { FormRecordClubQuestionSelection } from "./form-record-club-question-selection";
-import { notFound } from "next/navigation";
+import { notFound } from "next/navigation"
+import { db } from "~/server/db"
+import { FormRecordClubQuestionSelection } from "./form-record-club-question-selection"
 
 export default async function ClubsCreatePage({
-  params,
+	params,
 }: {
-  params: { clubId: string };
+	params: { clubId: string }
 }) {
-  const clubId = Number(params.clubId);
-  const club = await db.query.clubs.findFirst({
-    where: (club, { eq }) => eq(club.id, Number(clubId)),
-  });
+	const clubId = Number(params.clubId)
+	const club = await db.query.clubs.findFirst({
+		where: (club, { eq }) => eq(club.id, Number(clubId)),
+	})
 
-  if (!club) {
-    return notFound();
-  }
+	if (!club) {
+		return notFound()
+	}
 
-  const questions = await db.query.questions.findMany();
+	const questions = await db.query.questions.findMany()
 
-  return <FormRecordClubQuestionSelection questions={questions!} club={club} />;
+	return <FormRecordClubQuestionSelection questions={questions} club={club} />
 }

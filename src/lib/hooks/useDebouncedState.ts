@@ -1,23 +1,23 @@
-import { useState, useEffect, useCallback } from "react";
+import { useCallback, useEffect, useState } from "react"
 
 export function useDebouncedState<T>(initialValue: T, delay = 300) {
-  const [value, setValue] = useState<T>(initialValue);
-  const [debouncedValue, setDebouncedValue] = useState<T>(initialValue);
+	const [value, setValue] = useState<T>(initialValue)
+	const [debouncedValue, setDebouncedValue] = useState<T>(initialValue)
 
-  useEffect(() => {
-    const timer = setTimeout(() => setDebouncedValue(value), delay);
+	useEffect(() => {
+		const timer = setTimeout(() => setDebouncedValue(value), delay)
 
-    return () => {
-      clearTimeout(timer);
-    };
-  }, [value, delay]);
+		return () => {
+			clearTimeout(timer)
+		}
+	}, [value, delay])
 
-  const setDebouncedState = useCallback(
-    (newValue: T | ((prevValue: T) => T)) => {
-      setValue(newValue);
-    },
-    [],
-  );
+	const setDebouncedState = useCallback(
+		(newValue: T | ((prevValue: T) => T)) => {
+			setValue(newValue)
+		},
+		[],
+	)
 
-  return [debouncedValue, setDebouncedState] as const;
+	return [debouncedValue, setDebouncedState] as const
 }
