@@ -18,7 +18,7 @@ export function CardClub({
   return (
     <Card
       key={club.id}
-      className="flex flex-col overflow-hidden bg-black shadow-lg @container"
+      className="flex h-full flex-col overflow-hidden shadow-sm @container"
     >
       {club.image ? (
         <div className="relative h-40 w-full">
@@ -31,16 +31,16 @@ export function CardClub({
               objectPosition: club.image.focalPoint ?? "center",
             }}
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/50"></div>
+          {/* <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/50"></div> */}
         </div>
       ) : (
         <div className="h-48 w-full bg-slate-100" />
       )}
       <CardHeader className="p-4 pt-2 @xs:p-5 @xs:pt-3">
-        <CardTitle className="mt-2 text-base text-slate-100">
+        <CardTitle className="mt-2 text-base text-slate-800">
           {club.name}
         </CardTitle>
-        <CardDescription className="text-sm text-slate-300">
+        <CardDescription className="text-sm text-slate-500">
           {club.shortDescription}
         </CardDescription>
       </CardHeader>

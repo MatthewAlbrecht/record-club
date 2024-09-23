@@ -58,7 +58,7 @@ async function SignedInHome() {
         <h3 className="mb-4 text-base font-semibold leading-6 text-slate-900">
           Coming up
         </h3>
-        <ul className="grid grid-cols-1 gap-4 gap-x-8 @2xl:grid-cols-2 @2xl:gap-6 @2xl:gap-x-10 @5xl:grid-cols-3 @5xl:gap-8 @5xl:gap-x-12">
+        <ul className="grid grid-cols-1 gap-2 gap-x-6 @2xl:grid-cols-2 @2xl:gap-4 @2xl:gap-x-8 @5xl:grid-cols-3 @5xl:gap-6 @5xl:gap-x-10">
           {upcomingAlbums.map((clubAlbum) => (
             <CardUpcomingAlbum key={clubAlbum.id} clubAlbum={clubAlbum} />
           ))}

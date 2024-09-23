@@ -13,19 +13,18 @@ export function UserLink() {
   return (
     <>
       <SignedIn>
-        <a
-          href="#"
-          className="flex items-center gap-x-4 px-6 py-3 text-sm font-semibold leading-6 text-slate-900 hover:bg-slate-50"
-        >
+        <div className="flex cursor-pointer items-center gap-x-4 px-6 py-3 text-sm font-semibold leading-6 text-slate-900 hover:bg-slate-50">
           <UserButton />
           <span className="sr-only">Your profile</span>
           <span aria-hidden="true">
             {user.user?.firstName} {user.user?.lastName}
           </span>
-        </a>
+        </div>
       </SignedIn>
       <SignedOut>
-        <SignInButton />
+        <div className="flex cursor-pointer items-center gap-x-4 px-6 py-3 text-sm font-semibold leading-6 text-slate-900 hover:bg-slate-50">
+          <SignInButton />
+        </div>
       </SignedOut>
     </>
   );
