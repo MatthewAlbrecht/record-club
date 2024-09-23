@@ -7,7 +7,15 @@ import {
 } from "next-safe-action"
 import { z } from "zod"
 import { ActionError, DatabaseError } from "~/server/api/utils"
-import { db } from "~/server/db"
+import { db, redis } from "~/server/db"
+import { Ratelimit } from "@upstash/ratelimit"
+
+const ratelimit = new Ratelimit({
+	redis: redis,
+	limiter: Ratelimit.slidingWindow(10, "10 s"),
+	prefix: "@upstash/ratelimit",
+	// analytics: true,
+})
 
 export const actionClient = createSafeActionClient({
 	handleServerError(e) {
@@ -46,23 +54,35 @@ export const actionClient = createSafeActionClient({
 	return result
 })
 
-export const authActionClient = actionClient.use(async ({ next }) => {
-	const { sessionId, userId: clerkUserId } = auth()
+export const authActionClient = actionClient
+	.use(async ({ next }) => {
+		const { sessionId, userId: clerkUserId } = auth()
 
-	if (!sessionId) {
-		throw new Error("Session not found!")
-	}
-	if (!clerkUserId) {
-		throw new Error("Session is not valid!")
-	}
+		if (!sessionId) {
+			throw new Error("Session not found!")
+		}
+		if (!clerkUserId) {
+			throw new Error("Session is not valid!")
+		}
 
-	const user = await db.query.users.findFirst({
-		where: (users, { eq }) => eq(users.clerkId, clerkUserId),
+		const user = await db.query.users.findFirst({
+			where: (users, { eq }) => eq(users.clerkId, clerkUserId),
+		})
+
+		if (!user) {
+			throw new Error("User not found!")
+		}
+
+		return next({ ctx: { clerkUserId, userId: user.id } })
 	})
+	// Rate limiting middleware: https://github.com/upstash/ratelimit-js/tree/main/examples/nextjs
+	.use(async ({ next, ctx }) => {
+		const identifier = ctx.clerkUserId
+		const { success } = await ratelimit.limit(identifier)
 
-	if (!user) {
-		throw new Error("User not found!")
-	}
+		if (!success) {
+			throw new Error("Rate limit exceeded")
+		}
 
-	return next({ ctx: { clerkUserId, userId: user.id } })
-})
+		return next()
+	})
