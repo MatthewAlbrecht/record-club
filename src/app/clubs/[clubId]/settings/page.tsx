@@ -42,22 +42,22 @@ export default async function ClubSettingsPage({
 	return (
 		<div>
 			<div>
-				<Tabs defaultValue="schedule" className="w-full">
+				<Tabs defaultValue="members" className="w-full">
 					<TabsList>
 						<TabsTrigger value="schedule">Schedule</TabsTrigger>
 						<TabsTrigger value="members">Members</TabsTrigger>
 						<TabsTrigger value="general">General</TabsTrigger>
 					</TabsList>
-					<TabsContent value="schedule">
-						<h2 className="text-xl font-bold">Schedule</h2>
+					<TabsContent value="schedule" className="mt-0">
+						<h2 className="text-xl font-bold my-8">Schedule</h2>
 						<FormRecordClubModifySchedule club={club} />
 					</TabsContent>
-					<TabsContent value="members">
-						<h2 className="text-xl font-bold">Members</h2>
+					<TabsContent value="members" className="mt-0">
+						<h2 className="text-xl font-bold my-8">Members</h2>
 						<TableClubMembers club={club} />
 					</TabsContent>
-					<TabsContent value="general">
-						<h2 className="text-xl font-bold">General Information</h2>
+					<TabsContent value="general" className="mt-0">
+						<h2 className="text-xl font-bold my-8">General Information</h2>
 						{/* Add general information content here */}
 					</TabsContent>
 				</Tabs>

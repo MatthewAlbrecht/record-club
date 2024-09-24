@@ -421,3 +421,93 @@ export const submitClubAlbumProgress = authActionClient
 			return { success: true }
 		},
 	)
+
+const removeMemberFromClubSchema = z.object({
+	clubId: z.number(),
+	userId: z.string(),
+})
+
+export const removeMemberFromClub = authActionClient
+	.metadata({ actionName: "removeMemberFromClub" })
+	.schema(removeMemberFromClubSchema)
+	.action(
+		async ({
+			parsedInput: { clubId, userId },
+			ctx: { userId: currentUserId },
+		}) => {
+			const currentUser = await db.query.clubMembers.findFirst({
+				where: (clubMember, { eq }) => eq(clubMember.userId, currentUserId),
+			})
+
+			if (!currentUser) {
+				throw new ActionError("You are not a member of this club")
+			}
+
+			if (currentUser.role !== "owner") {
+				throw new ActionError("You are not an owner of this club")
+			}
+
+			const memberToRemove = await db.query.clubMembers.findFirst({
+				where: (clubMember, { eq, and }) =>
+					and(eq(clubMember.clubId, clubId), eq(clubMember.userId, userId)),
+			})
+
+			if (!memberToRemove) {
+				throw new ActionError("Member not found")
+			}
+
+			if (memberToRemove.role === "owner") {
+				throw new ActionError("You cannot remove owners")
+			}
+
+			await db
+				.update(clubMembers)
+				.set({ inactiveAt: new Date(), role: "member" })
+				.where(eq(clubMembers.id, memberToRemove.id))
+
+			revalidatePath(`/clubs/${clubId}/settings`)
+		},
+	)
+
+const blockMemberFromClubSchema = z.object({
+	clubId: z.number(),
+	userId: z.string(),
+})
+
+export const blockMemberFromClub = authActionClient
+	.metadata({ actionName: "blockMemberFromClub" })
+	.schema(blockMemberFromClubSchema)
+	.action(
+		async ({
+			parsedInput: { clubId, userId },
+			ctx: { userId: currentUserId },
+		}) => {
+			const currentUser = await db.query.clubMembers.findFirst({
+				where: (clubMember, { eq }) => eq(clubMember.userId, currentUserId),
+			})
+
+			if (!currentUser) {
+				throw new ActionError("You are not a member of this club")
+			}
+
+			if (currentUser.role !== "owner") {
+				throw new ActionError("You are not an owner of this club")
+			}
+
+			const memberToBlock = await db.query.clubMembers.findFirst({
+				where: (clubMember, { eq, and }) =>
+					and(eq(clubMember.clubId, clubId), eq(clubMember.userId, userId)),
+			})
+
+			if (!memberToBlock) {
+				throw new ActionError("Member not found")
+			}
+
+			await db
+				.update(clubMembers)
+				.set({ blockedAt: new Date(), role: "member" })
+				.where(eq(clubMembers.id, memberToBlock.id))
+
+			revalidatePath(`/clubs/${clubId}/settings`)
+		},
+	)

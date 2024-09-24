@@ -65,14 +65,6 @@ export const authActionClient = actionClient
 			throw new Error("User not found!")
 		}
 
-		const user = await db.query.users.findFirst({
-			where: (users, { eq }) => eq(users.id, userId),
-		})
-
-		if (!user) {
-			throw new Error("User not found!")
-		}
-
 		return next({ ctx: { userId } })
 	})
 	// Rate limiting middleware: https://github.com/upstash/ratelimit-js/tree/main/examples/nextjs

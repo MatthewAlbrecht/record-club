@@ -4,18 +4,7 @@ import { NavbarClubList } from "./navbar-club-list"
 import { NavbarNavigation } from "./navbar-navigation"
 import { UserLink } from "./navbar-user-link"
 
-const navigation = [
-	{ name: "Home", href: "/", icon: HomeIcon },
-	{ name: "Discover", href: "/discover", icon: CompassIcon },
-	{ name: "Vault", href: "/vault", icon: SquareLibraryIcon },
-]
-const teams = [
-	{ id: 1, name: "Heroicons", href: "#", initial: "H", current: false },
-	{ id: 2, name: "Tailwind Labs", href: "#", initial: "T", current: false },
-	{ id: 3, name: "Workcation", href: "#", initial: "W", current: false },
-]
-
-export default async function NavbarN() {
+export async function Navbar() {
 	return (
 		<div className="nav m-2 flex grow flex-col gap-y-5 overflow-y-auto rounded-2xl bg-white px-6 shadow">
 			<div className="flex h-16 shrink-0 items-center">

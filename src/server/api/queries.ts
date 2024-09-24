@@ -4,7 +4,7 @@ import { auth } from "@clerk/nextjs/server"
 import { notFound, redirect } from "next/navigation"
 import { db } from "../db"
 
-export type GetClubMembers = ReturnType<typeof getClubMembers>
+export type GetClubMembers = Awaited<ReturnType<typeof getClubMembers>>
 export const getClubMembers = async (clubId: number) => {
 	const { userId } = auth()
 
