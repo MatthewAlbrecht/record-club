@@ -227,7 +227,8 @@ export const clubMembers = createTable(
 			.references(() => users.id)
 			.notNull(),
 		role: clubMemberRoleEnum("role").default("member").notNull(),
-		isActive: boolean("is_active").default(true).notNull(),
+		inactiveAt: timestamp("inactive_at", { withTimezone: true }),
+		blockedAt: timestamp("blocked_at", { withTimezone: true }),
 		createdAt: timestamp("created_at", { withTimezone: true })
 			.default(sql`CURRENT_TIMESTAMP`)
 			.notNull(),

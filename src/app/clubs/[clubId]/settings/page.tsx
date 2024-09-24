@@ -4,6 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs"
 import { db } from "~/server/db"
 import { getClubWithAlbums } from "./_queries"
 import { FormRecordClubModifySchedule } from "./form-record-club-modify-schedule"
+import { TableClubMembers } from "./table-club-members"
 
 export default async function ClubSettingsPage({
 	params,
@@ -17,11 +18,12 @@ export default async function ClubSettingsPage({
 	}
 
 	const membership = await db.query.clubMembers.findFirst({
-		where: (clubMembers, { eq, and }) =>
+		where: (clubMembers, { eq, and, isNull }) =>
 			and(
 				eq(clubMembers.clubId, Number(params.clubId)),
 				eq(clubMembers.userId, userId),
-				eq(clubMembers.isActive, true),
+				isNull(clubMembers.inactiveAt),
+				isNull(clubMembers.blockedAt),
 			),
 	})
 
@@ -52,7 +54,7 @@ export default async function ClubSettingsPage({
 					</TabsContent>
 					<TabsContent value="members">
 						<h2 className="text-xl font-bold">Members</h2>
-						{/* Add members content here */}
+						<TableClubMembers club={club} />
 					</TabsContent>
 					<TabsContent value="general">
 						<h2 className="text-xl font-bold">General Information</h2>

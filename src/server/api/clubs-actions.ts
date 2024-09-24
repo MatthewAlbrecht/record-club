@@ -230,49 +230,29 @@ export const joinClubAction = authActionClient
 			throw new ActionError("Club not found")
 		}
 
-		const clubMember = await db.query.clubMembers.findFirst({
-			where: (clubMember, { eq, and }) =>
-				and(eq(clubMember.clubId, clubId), eq(clubMember.userId, userId)),
+		const existingClubMember = await db.query.clubMembers.findFirst({
+			where: (clubMember, { eq }) =>
+				eq(clubMember.clubId, clubId) && eq(clubMember.userId, userId),
 		})
 
-		if (clubMember?.isActive) {
-			throw new ActionError("You are already a member of this club")
+		if (existingClubMember?.blockedAt) {
+			throw new ActionError("You are blocked from this club")
 		}
 
-		if (clubMember && !clubMember.isActive) {
-			await db
-				.update(clubMembers)
-				.set({ isActive: true })
-				.where(eq(clubMembers.id, clubMember.id))
+		await db
+			.insert(clubMembers)
+			.values({
+				clubId,
+				userId,
+				role: "member",
+			})
+			.onConflictDoUpdate({
+				target: [clubMembers.userId, clubMembers.clubId],
+				set: { inactiveAt: null },
+			})
 
-			revalidatePath(`/clubs/${clubId}`)
-			return { club }
-		}
-
-		try {
-			await db
-				.insert(clubMembers)
-				.values({
-					clubId,
-					userId,
-					role: "member",
-				})
-				.returning()
-
-			revalidatePath(`/clubs/${clubId}`)
-			return { club }
-		} catch (error) {
-			if (error instanceof Error) {
-				throw new DatabaseError(
-					{
-						[PGErrorCodes.UniqueConstraintViolation]:
-							"You are already a member of this club",
-					},
-					{ cause: error },
-				)
-			}
-			throw error
-		}
+		revalidatePath(`/clubs/${clubId}`)
+		return { club }
 	})
 
 const leaveClubSchema = z.object({
@@ -301,7 +281,7 @@ export const leaveClubAction = authActionClient
 
 		await db
 			.update(clubMembers)
-			.set({ isActive: false })
+			.set({ inactiveAt: new Date() })
 			.where(eq(clubMembers.id, clubMember.id))
 
 		revalidatePath(`/clubs/${clubId}`)

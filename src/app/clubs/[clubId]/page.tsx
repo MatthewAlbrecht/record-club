@@ -145,11 +145,12 @@ async function getClubWithAlbums(clubId: number) {
 
 async function getUserClubMembership(clubId: number, userId: string) {
 	return db.query.clubMembers.findFirst({
-		where: (clubMembers, { eq, and }) =>
+		where: (clubMembers, { eq, and, isNull }) =>
 			and(
 				eq(clubMembers.clubId, clubId),
 				eq(clubMembers.userId, userId),
-				eq(clubMembers.isActive, true),
+				isNull(clubMembers.inactiveAt),
+				isNull(clubMembers.blockedAt),
 			),
 	})
 }

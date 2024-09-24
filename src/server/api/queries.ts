@@ -1,6 +1,42 @@
 "use server"
 
 import { auth } from "@clerk/nextjs/server"
-import { redirect } from "next/navigation"
-import { Routes } from "~/lib/routes"
+import { notFound, redirect } from "next/navigation"
 import { db } from "../db"
+
+export type GetClubMembers = ReturnType<typeof getClubMembers>
+export const getClubMembers = async (clubId: number) => {
+	const { userId } = auth()
+
+	if (!userId) {
+		notFound()
+	}
+
+	const clubAdmin = await db.query.clubMembers.findFirst({
+		where: (clubMembers, { eq, and, isNull, inArray }) =>
+			and(
+				eq(clubMembers.clubId, clubId),
+				eq(clubMembers.userId, userId),
+				isNull(clubMembers.inactiveAt),
+				isNull(clubMembers.blockedAt),
+				inArray(clubMembers.role, ["owner", "admin"]),
+			),
+	})
+
+	if (!clubAdmin) {
+		notFound()
+	}
+
+	const clubMembers = await db.query.clubMembers.findMany({
+		where: (clubMembers, { eq, and }) => and(eq(clubMembers.clubId, clubId)),
+		with: {
+			user: true,
+		},
+	})
+
+	if (!clubMembers) {
+		notFound()
+	}
+
+	return clubMembers
+}
