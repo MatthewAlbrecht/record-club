@@ -235,7 +235,7 @@ export const joinClubAction = authActionClient
 				and(eq(clubMember.clubId, clubId), eq(clubMember.userId, userId)),
 		})
 
-		if (clubMember && clubMember.isActive) {
+		if (clubMember?.isActive) {
 			throw new ActionError("You are already a member of this club")
 		}
 
@@ -377,68 +377,67 @@ export const submitClubAlbumProgress = authActionClient
 							...baseAnswer,
 							answerShortText: answer,
 						} satisfies Partial<SelectAnswer>
-					} else if (questionCategory === "long-answer") {
+					}
+					if (questionCategory === "long-answer") {
 						return {
 							...baseAnswer,
 							answerLongText: answer,
 						} satisfies Partial<SelectAnswer>
-					} else if (questionCategory === "true-false") {
+					}
+					if (questionCategory === "true-false") {
 						return {
 							...baseAnswer,
 							answerBoolean: answer === "true",
 						} satisfies Partial<SelectAnswer>
-					} else if (questionCategory === "number") {
+					}
+					if (questionCategory === "number") {
 						return {
 							...baseAnswer,
 							answerNumber: answer,
 						} satisfies Partial<SelectAnswer>
-					} else if (questionCategory === "color-picker") {
+					}
+					if (questionCategory === "color-picker") {
 						return {
 							...baseAnswer,
 							answerColor: answer,
 						} satisfies Partial<SelectAnswer>
-					} else {
-						throw new ActionError("Invalid question category")
 					}
+					throw new ActionError("Invalid question category")
 				})
 
-			try {
-				await db.transaction(async (trx) => {
-					const userClubAlbumProgress = await trx
-						.insert(userClubAlbumProgressTable)
-						.values({
-							clubAlbumId,
-							userId,
-							clubId: clubAlbum.clubId,
-							albumId: clubAlbum.albumId,
+			await db.transaction(async (trx) => {
+				const userClubAlbumProgress = await trx
+					.insert(userClubAlbumProgressTable)
+					.values({
+						clubAlbumId,
+						userId,
+						clubId: clubAlbum.clubId,
+						albumId: clubAlbum.albumId,
+						hasListened,
+						listenedAt: hasListened ? new Date() : undefined,
+					})
+					.onConflictDoUpdate({
+						target: [
+							userClubAlbumProgressTable.userId,
+							userClubAlbumProgressTable.clubAlbumId,
+						],
+						set: {
 							hasListened,
 							listenedAt: hasListened ? new Date() : undefined,
-						})
-						.onConflictDoUpdate({
-							target: [
-								userClubAlbumProgressTable.userId,
-								userClubAlbumProgressTable.clubAlbumId,
-							],
-							set: {
-								hasListened,
-								listenedAt: hasListened ? new Date() : undefined,
-							},
-						})
-						.returning()
+						},
+					})
+					.returning()
 
-					const progressId = userClubAlbumProgress[0]!.id
+				const progressId = userClubAlbumProgress[0]!.id
 
-					const updatedAnswerValues = answerValues.map((answer) => ({
-						...answer,
-						userClubAlbumProgressId: progressId,
-					}))
+				const updatedAnswerValues = answerValues.map((answer) => ({
+					...answer,
+					userClubAlbumProgressId: progressId,
+				}))
 
-					await trx.insert(answersTable).values(updatedAnswerValues)
-				})
+				await trx.insert(answersTable).values(updatedAnswerValues)
+			})
 
-				return { success: true }
-			} catch (error) {
-				throw error
-			}
+			return { success: true }
 		},
 	)

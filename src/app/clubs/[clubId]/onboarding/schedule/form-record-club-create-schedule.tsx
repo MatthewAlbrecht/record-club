@@ -34,7 +34,7 @@ const schema = z.object({
 		id: z.number(),
 		artist: z.string(),
 		title: z.string(),
-		createdAt: z.date(),
+		createdAt: z.string(),
 		releaseYear: z.number().nullable(),
 		releaseMonth: z.number().nullable(),
 		releaseDay: z.number().nullable(),
@@ -55,6 +55,8 @@ export function FormRecordClubCreateSchedule({
 			date: new Date(),
 		},
 	})
+
+	console.log(form.watch(), form.formState.errors)
 
 	const { execute } = useAction(addAlbumToClub, {
 		onSuccess({ data }) {
@@ -158,10 +160,7 @@ export function FormRecordClubCreateSchedule({
 
 				<div className="flex justify-end gap-x-6">
 					<Button variant="ghost">Skip</Button>
-					<Button
-						type="submit"
-						disabled={!form.formState.isValid || form.formState.isSubmitting}
-					>
+					<Button type="submit" disabled={false}>
 						Add album
 					</Button>
 				</div>
