@@ -11,8 +11,8 @@ import { NavbarMobileHeader } from "./navbar-mobile-header"
 import { ReactQueryProvider } from "./react-query-provider"
 
 export const metadata: Metadata = {
-	title: "Record Club",
-	description: "A record club for the modern age.",
+	title: "Record Clubs",
+	description: "Where music nerds congregate.",
 	icons: [{ rel: "icon", url: "/favicon.ico" }],
 }
 

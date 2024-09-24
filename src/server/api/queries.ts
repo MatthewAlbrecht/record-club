@@ -13,7 +13,7 @@ export async function getAuthenticatedUser() {
 	}
 
 	const user = await db.query.users.findFirst({
-		where: (users, { eq }) => eq(users.clerkId, userId),
+		where: (users, { eq }) => eq(users.id, userId),
 	})
 	if (!user) {
 		redirect(Routes.SignIn)

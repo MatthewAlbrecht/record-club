@@ -54,8 +54,7 @@ export const clubMemberRoleEnum = pgEnum("club_member_role", [
 export const users = createTable(
 	"user",
 	{
-		id: serial("id").primaryKey(),
-		clerkId: varchar("clerk_id", { length: 256 }).notNull(),
+		id: varchar("id", { length: 256 }).primaryKey(),
 		createdAt: timestamp("created_at", { withTimezone: true })
 			.default(sql`CURRENT_TIMESTAMP`)
 			.notNull(),
@@ -69,7 +68,6 @@ export const users = createTable(
 		avatarUrl: varchar("avatar_url", { length: 256 }),
 	},
 	(user) => ({
-		uniqueClerkId: uniqueIndex("unique_clerk_id").on(user.clerkId),
 		uniqueUsername: uniqueIndex("unique_username").on(user.username),
 	}),
 )
@@ -82,10 +80,10 @@ export const clubs = createTable(
 		shortDescription: varchar("short_description", { length: 128 }).notNull(),
 		longDescription: varchar("long_description", { length: 2048 }).notNull(),
 		imageId: integer("image_id").references(() => images.id),
-		createdById: integer("created_by_id")
+		createdById: varchar("created_by_id")
 			.references(() => users.id)
 			.notNull(),
-		ownedById: integer("owned_by_id")
+		ownedById: varchar("owned_by_id")
 			.references(() => users.id)
 			.notNull(),
 		clubType: clubTypeEnum("club_type").notNull().default("live"),
@@ -170,7 +168,7 @@ export const clubAlbums = createTable(
 			.references(() => albums.id)
 			.notNull(),
 		scheduledFor: date("scheduled_for"),
-		createdById: integer("created_by_id")
+		createdById: varchar("created_by_id")
 			.references(() => users.id)
 			.notNull(),
 		createdAt: timestamp("created_at", { withTimezone: true })
@@ -187,7 +185,7 @@ export const clubAlbums = createTable(
 
 export const answers = createTable("answer", {
 	id: serial("id").primaryKey(),
-	userId: integer("user_id")
+	userId: varchar("user_id")
 		.references(() => users.id)
 		.notNull(),
 	clubAlbumId: integer("club_album_id")
@@ -225,7 +223,7 @@ export const clubMembers = createTable(
 		clubId: integer("club_id")
 			.references(() => clubs.id)
 			.notNull(),
-		userId: integer("user_id")
+		userId: varchar("user_id")
 			.references(() => users.id)
 			.notNull(),
 		role: clubMemberRoleEnum("role").default("member").notNull(),
@@ -252,7 +250,7 @@ export const userClubAlbumProgress = createTable(
 	"user_club_album_progress",
 	{
 		id: serial("id").primaryKey(),
-		userId: integer("user_id")
+		userId: varchar("user_id")
 			.references(() => users.id)
 			.notNull(),
 		clubId: integer("club_id")

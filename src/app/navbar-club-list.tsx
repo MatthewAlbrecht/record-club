@@ -7,14 +7,14 @@ import { db } from "~/server/db"
 import { NavbarClubListItem } from "./navbar-club-list-item"
 
 export async function NavbarClubList() {
-	const { userId: clerkId } = auth()
+	const { userId } = auth()
 
-	if (clerkId == null) {
+	if (userId == null) {
 		return <NavbarClubListEmpty />
 	}
 
 	const user = await db.query.users.findFirst({
-		where: (users, { eq }) => eq(users.clerkId, clerkId),
+		where: (users, { eq }) => eq(users.id, userId),
 	})
 
 	if (user == null) {

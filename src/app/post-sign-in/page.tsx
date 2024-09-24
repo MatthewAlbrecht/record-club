@@ -15,7 +15,7 @@ export default async function PostSignInPage() {
 	await db
 		.insert(users)
 		.values({
-			clerkId: userId,
+			id: userId,
 			email: user.emailAddresses[0]?.emailAddress ?? "",
 			username: user.username,
 			firstName: user.firstName,
@@ -24,7 +24,7 @@ export default async function PostSignInPage() {
 		})
 
 		.onConflictDoUpdate({
-			target: users.clerkId,
+			target: users.id,
 			set: {
 				email: user.emailAddresses[0]?.emailAddress ?? "",
 				username: user.username,

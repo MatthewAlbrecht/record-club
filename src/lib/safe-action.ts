@@ -56,28 +56,28 @@ export const actionClient = createSafeActionClient({
 
 export const authActionClient = actionClient
 	.use(async ({ next }) => {
-		const { sessionId, userId: clerkUserId } = auth()
+		const { sessionId, userId } = auth()
 
 		if (!sessionId) {
 			throw new Error("Session not found!")
 		}
-		if (!clerkUserId) {
-			throw new Error("Session is not valid!")
+		if (!userId) {
+			throw new Error("User not found!")
 		}
 
 		const user = await db.query.users.findFirst({
-			where: (users, { eq }) => eq(users.clerkId, clerkUserId),
+			where: (users, { eq }) => eq(users.id, userId),
 		})
 
 		if (!user) {
 			throw new Error("User not found!")
 		}
 
-		return next({ ctx: { clerkUserId, userId: user.id } })
+		return next({ ctx: { userId } })
 	})
 	// Rate limiting middleware: https://github.com/upstash/ratelimit-js/tree/main/examples/nextjs
 	.use(async ({ next, ctx }) => {
-		const identifier = ctx.clerkUserId
+		const identifier = ctx.userId
 		const { success } = await ratelimit.limit(identifier)
 
 		if (!success) {
