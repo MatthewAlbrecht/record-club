@@ -2,9 +2,7 @@
 
 import { Button } from "~/components/ui/button"
 
-import { UseQueryOptions, useQuery } from "@tanstack/react-query"
 import { format, parseISO } from "date-fns"
-import { TrashIcon } from "lucide-react"
 import { useAction } from "next-safe-action/hooks"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
@@ -30,15 +28,13 @@ import type {
 
 const schema = z.object({
 	date: z.date(),
-	album: z.object({
-		id: z.number(),
-		artist: z.string(),
-		title: z.string(),
-		createdAt: z.string(),
-		releaseYear: z.number().nullable(),
-		releaseMonth: z.number().nullable(),
-		releaseDay: z.number().nullable(),
-	}),
+	album: z
+		.object({
+			id: z.number(),
+			artist: z.string(),
+			title: z.string(),
+		})
+		.passthrough(),
 })
 
 export function FormRecordClubCreateSchedule({
