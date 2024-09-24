@@ -73,17 +73,19 @@ function SignedOutHome() {
 }
 
 // Database query functions
-async function getClubsForUser(userId: number) {
+async function getClubsForUser(userId: string) {
 	return db
 		.select()
 		.from(clubMembers)
 		.innerJoin(clubs, eq(clubMembers.clubId, clubs.id))
 		.leftJoin(images, eq(clubs.imageId, images.id))
-		.where(and(eq(clubMembers.userId, userId), eq(clubs.isActive, true)))
+		.where(
+			and(eq(clubMembers.userId, userId.toString()), eq(clubs.isActive, true)),
+		)
 }
 
 /* TODO @matthewalbrecht: this query is slow and should be optimized */
-async function getUpcomingAlbums(clubIds: number[], userId: number) {
+async function getUpcomingAlbums(clubIds: number[], userId: string) {
 	const formattedToday = format(new Date(), "yyyy-MM-dd")
 	return db.query.clubAlbums.findMany({
 		where: (clubAlbums, { and, gte, inArray }) =>

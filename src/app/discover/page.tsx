@@ -33,7 +33,7 @@ export default async function DiscoverPage() {
 	)
 }
 
-function getClubsImNotAMemberOf(userId: number) {
+function getClubsImNotAMemberOf(userId: string) {
 	return db.query.clubs.findMany({
 		where: (clubs, { not, inArray, eq }) =>
 			not(

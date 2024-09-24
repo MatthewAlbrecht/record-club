@@ -133,7 +133,7 @@ async function getClubWithAlbums(clubId: number) {
 	})
 }
 
-async function getUserClubMembership(clubId: number, userId: number) {
+async function getUserClubMembership(clubId: number, userId: string) {
 	return db.query.clubMembers.findFirst({
 		where: (clubMembers, { eq, and }) =>
 			and(
@@ -145,7 +145,7 @@ async function getUserClubMembership(clubId: number, userId: number) {
 }
 
 /* TODO @matthewalbrecht: this query is slow and should be optimized */
-async function getUpcomingAlbums(clubId: number, userId: number) {
+async function getUpcomingAlbums(clubId: number, userId: string) {
 	return db.query.clubAlbums.findMany({
 		where: (clubAlbums, { and, eq }) => and(eq(clubAlbums.clubId, clubId)),
 		with: {
