@@ -4,12 +4,12 @@ import { format } from "date-fns"
 import { and, eq } from "drizzle-orm"
 import { ArrowRight } from "lucide-react"
 import Link from "next/link"
+import { notFound } from "next/navigation"
 import { ButtonCreateLarge } from "~/components/button-create-large"
 import { CardClub } from "~/components/card-club"
 import { CardUpcomingAlbum } from "~/components/card-upcoming-album"
 import { Button } from "~/components/ui/button"
 import { Routes } from "~/lib/routes"
-import { getAuthenticatedUser } from "~/server/api/queries"
 import { db } from "~/server/db"
 import { clubMembers, clubs, images } from "~/server/db/schema"
 
@@ -31,11 +31,15 @@ export default async function HomePage() {
 }
 
 async function SignedInHome() {
-	const user = await getAuthenticatedUser()
+	const { userId } = auth()
 
-	const clubsImAMemberOf = await getClubsForUser(user.id)
+	if (!userId) {
+		return notFound()
+	}
+
+	const clubsImAMemberOf = await getClubsForUser(userId)
 	const clubIds = clubsImAMemberOf.map(({ club }) => club.id)
-	const upcomingAlbums = await getUpcomingAlbums(clubIds, user.id)
+	const upcomingAlbums = await getUpcomingAlbums(clubIds, userId)
 
 	return (
 		<div className="flex flex-col gap-10 @container">

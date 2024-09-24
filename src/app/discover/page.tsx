@@ -1,14 +1,19 @@
+import { auth } from "@clerk/nextjs/server"
 import Link from "next/link"
+import { notFound } from "next/navigation"
 import { CardClub } from "~/components/card-club"
 import { Routes } from "~/lib/routes"
-import { getAuthenticatedUser } from "~/server/api/queries"
 import { db } from "~/server/db"
 import { clubMembers } from "~/server/db/schema"
 
 export default async function DiscoverPage() {
-	const user = await getAuthenticatedUser()
+	const { userId } = auth()
 
-	const clubsImNotAMemberOf = await getClubsImNotAMemberOf(user.id)
+	if (!userId) {
+		return notFound()
+	}
+
+	const clubsImNotAMemberOf = await getClubsImNotAMemberOf(userId)
 
 	return clubsImNotAMemberOf.length > 0 ? (
 		<div className="@container">

@@ -5,10 +5,10 @@ import { notFound } from "next/navigation"
 import { CardUpcomingAlbum } from "~/components/card-upcoming-album"
 import { Button } from "~/components/ui/button"
 import { Routes } from "~/lib/routes"
-import { getAuthenticatedUser } from "~/server/api/queries"
 import { db } from "~/server/db"
 import type { SelectClub } from "~/server/db/schema"
 import { ButtonJoinClub } from "./button-club-actions"
+import { auth } from "@clerk/nextjs/server"
 
 export default async function RecordClubHome({
 	params: { clubId },
@@ -21,10 +21,15 @@ export default async function RecordClubHome({
 	const club = await getClubWithAlbums(parsedClubId)
 	if (!club) notFound()
 
-	const user = await getAuthenticatedUser()
-	const membership = await getUserClubMembership(club.id, user.id)
+	const { userId } = auth()
+
+	if (!userId) {
+		return notFound()
+	}
+
+	const membership = await getUserClubMembership(club.id, userId)
 	const isOwnerOrAdmin =
-		club.ownedById === user.id || membership?.role === "admin"
+		club.ownedById === userId || membership?.role === "admin"
 	const isMember = !!membership
 
 	return isMember ? (
@@ -43,8 +48,13 @@ async function ClubPageIsMember({
 	club: Club
 	isOwnerOrAdmin: boolean
 }) {
-	const user = await getAuthenticatedUser()
-	const upcomingAlbums = await getUpcomingAlbums(club.id, user.id)
+	const { userId } = auth()
+
+	if (!userId) {
+		return notFound()
+	}
+
+	const upcomingAlbums = await getUpcomingAlbums(club.id, userId)
 
 	return (
 		<div className="@container">

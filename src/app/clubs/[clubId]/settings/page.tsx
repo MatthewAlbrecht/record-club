@@ -1,7 +1,6 @@
 import { auth } from "@clerk/nextjs/server"
 import { notFound } from "next/navigation"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs"
-import { getAuthenticatedUser } from "~/server/api/queries"
 import { db } from "~/server/db"
 import { getClubWithAlbums } from "./_queries"
 import { FormRecordClubModifySchedule } from "./form-record-club-modify-schedule"
@@ -11,12 +10,17 @@ export default async function ClubSettingsPage({
 }: {
 	params: { clubId: string }
 }) {
-	const user = await getAuthenticatedUser()
+	const { userId } = auth()
+
+	if (!userId) {
+		return notFound()
+	}
+
 	const membership = await db.query.clubMembers.findFirst({
 		where: (clubMembers, { eq, and }) =>
 			and(
 				eq(clubMembers.clubId, Number(params.clubId)),
-				eq(clubMembers.userId, user.id),
+				eq(clubMembers.userId, userId),
 				eq(clubMembers.isActive, true),
 			),
 	})
