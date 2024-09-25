@@ -9,14 +9,13 @@ import { TypeaheadAlbums } from "~/components/typeahead-albums"
 import { Calendar } from "~/components/ui/calendar"
 import { addAlbumToClub, deleteClubAlbum } from "~/server/api/clubs-actions"
 import type { SelectAlbum } from "~/server/db/schema"
-import type { ClubWithAlbums } from "./_queries"
-
 import { Button } from "~/components/ui/button"
+import type { GetClubWithAlbums } from "~/server/api/queries"
 
 export function FormClubModifySchedule({
 	club,
 }: {
-	club: NonNullable<ClubWithAlbums>
+	club: NonNullable<GetClubWithAlbums>
 }) {
 	const [selectedDate, setSelectedDate] = useState<Date>()
 	const [selectedAlbum, setSelectedAlbum] = useState<SelectAlbum>()
