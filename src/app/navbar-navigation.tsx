@@ -7,6 +7,7 @@ import { cn } from "~/lib/utils"
 
 export function NavbarNavigation() {
 	const pathname = usePathname()
+
 	return (
 		<ul className="-mx-2 space-y-1">
 			{navigation.map((item) => (

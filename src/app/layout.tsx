@@ -25,7 +25,6 @@ export default function RootLayout({
 				<html lang="en" className={cn(`${GeistSans.variable}`, "h-full")}>
 					<body className="bg-slate-100">
 						<div className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-72 lg:flex-col">
-							{/* Sidebar component, swap this element with another sidebar if you like */}
 							<Navbar />
 						</div>
 

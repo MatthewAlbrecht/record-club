@@ -82,7 +82,7 @@ function FocalPointPicker({
 		if (y > 100) y = 100
 		setFocalPoint({ x, y })
 		setIsDragging(false)
-		updateFocalPoint({ x: focalPoint.x, y: focalPoint.y, clubId: club.id })
+		updateFocalPoint({ x, y, clubId: club.id })
 	}
 
 	return (

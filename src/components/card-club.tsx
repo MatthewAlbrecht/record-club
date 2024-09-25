@@ -8,7 +8,7 @@ export function CardClub({
 }: {
 	club: Pick<SelectClub, "id" | "name" | "shortDescription"> & {
 		image:
-			| (Pick<SelectImage, "url" | "focalPoint"> & {
+			| (Pick<SelectImage, "url" | "focalPointX" | "focalPointY"> & {
 					[key: string]: unknown
 			  })
 			| null
