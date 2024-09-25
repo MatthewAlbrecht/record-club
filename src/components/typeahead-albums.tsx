@@ -97,11 +97,6 @@ export function TypeaheadAlbums({
 										key={album.id}
 										value={album.id.toString()}
 										onSelect={(currentValue) => {
-											console.log(
-												"album",
-												album.createdAt,
-												typeof album.createdAt,
-											)
 											setSelected(album)
 											setValue(currentValue === value ? "" : album.title)
 											setOpen(false)

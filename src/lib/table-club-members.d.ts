@@ -1,5 +1,5 @@
-import type { SelectClubMember } from "~/server/db/schema"
 import type { RowData } from "@tanstack/react-table"
+import type { SelectClubMember } from "~/server/db/schema"
 
 declare module "@tanstack/react-table" {
 	interface TableMeta<TData extends RowData> {

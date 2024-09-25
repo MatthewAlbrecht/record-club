@@ -159,8 +159,6 @@ export const columns: ColumnDef<GetClubMembers[number]>[] = [
 				},
 			})
 			const clubMember = row.original
-			const currentMember = row.original
-			console.log(currentMember, clubMember)
 
 			if (!table.options.meta?.currentMember) {
 				return null

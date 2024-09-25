@@ -283,7 +283,11 @@ export const userClubAlbumProgress = createTable(
 export const images = createTable("image", {
 	id: serial("id").primaryKey(),
 	url: varchar("url", { length: 256 }).notNull(),
-	focalPoint: varchar("focal_point", { length: 256 }),
+	focalPointX: integer("focal_point_x").default(50).notNull(),
+	focalPointY: integer("focal_point_y").default(50).notNull(),
+	uploadedById: varchar("uploaded_by_id")
+		.references(() => users.id)
+		.notNull(),
 	createdAt: timestamp("created_at", { withTimezone: true })
 		.default(sql`CURRENT_TIMESTAMP`)
 		.notNull(),

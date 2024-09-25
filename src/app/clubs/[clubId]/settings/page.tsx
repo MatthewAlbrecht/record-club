@@ -2,9 +2,10 @@ import { auth } from "@clerk/nextjs/server"
 import { notFound } from "next/navigation"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs"
 import { db } from "~/server/db"
-import { getClubWithAlbums } from "./_queries"
-import { FormRecordClubModifySchedule } from "./form-record-club-modify-schedule"
+import { FormClubModifySchedule } from "./form-club-modify-schedule"
 import { TableClubMembers } from "./table-club-members"
+import { FormClubGeneralInfo } from "./form-club-general-info"
+import { getClubWithAlbums } from "~/server/api/queries"
 
 export default async function ClubSettingsPage({
 	params,
@@ -50,7 +51,7 @@ export default async function ClubSettingsPage({
 					</TabsList>
 					<TabsContent value="schedule" className="mt-0">
 						<h2 className="text-xl font-bold my-8">Schedule</h2>
-						<FormRecordClubModifySchedule club={club} />
+						<FormClubModifySchedule club={club} />
 					</TabsContent>
 					<TabsContent value="members" className="mt-0">
 						<h2 className="text-xl font-bold my-8">Members</h2>
@@ -58,6 +59,7 @@ export default async function ClubSettingsPage({
 					</TabsContent>
 					<TabsContent value="general" className="mt-0">
 						<h2 className="text-xl font-bold my-8">General Information</h2>
+						<FormClubGeneralInfo club={club} />
 						{/* Add general information content here */}
 					</TabsContent>
 				</Tabs>

@@ -22,6 +22,8 @@ export const env = createEnv({
 		BLOB_READ_WRITE_TOKEN: z.string(),
 		UPSTASH_REDIS_REST_URL: z.string().url(),
 		UPSTASH_REDIS_REST_TOKEN: z.string(),
+		UPLOADTHING_SECRET: z.string(),
+		UPLOADTHING_TOKEN: z.string(),
 	},
 
 	/**
@@ -60,6 +62,8 @@ export const env = createEnv({
 			process.env.NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL,
 		UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL,
 		UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN,
+		UPLOADTHING_SECRET: process.env.UPLOADTHING_SECRET,
+		UPLOADTHING_TOKEN: process.env.UPLOADTHING_TOKEN,
 	},
 	/**
 	 * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially

@@ -67,7 +67,7 @@ async function ClubPageIsMember({
 							fill
 							className="object-cover"
 							style={{
-								objectPosition: club.image.focalPoint ?? "center",
+								objectPosition: `${club.image.focalPointX}% ${club.image.focalPointY}%`,
 							}}
 						/>
 					</div>

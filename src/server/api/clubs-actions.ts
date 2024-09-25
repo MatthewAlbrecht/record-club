@@ -12,6 +12,7 @@ import {
 	clubMembers,
 	clubQuestions,
 	clubs,
+	images,
 	userClubAlbumProgress as userClubAlbumProgressTable,
 } from "../db/schema"
 
@@ -508,6 +509,8 @@ export const blockMemberFromClub = authActionClient
 				.set({ blockedAt: new Date(), role: "member" })
 				.where(eq(clubMembers.id, memberToBlock.id))
 
+			// TODO: Remove all club related data from user (club questions, albums, etc.)
+
 			revalidatePath(`/clubs/${clubId}/settings`)
 		},
 	)
@@ -560,3 +563,41 @@ export const changeMemberRole = authActionClient
 			return { role }
 		},
 	)
+
+const updateClubImageFocalPointSchema = z.object({
+	clubId: z.number(),
+	x: z.number(),
+	y: z.number(),
+})
+
+export const updateClubImageFocalPoint = authActionClient
+	.metadata({ actionName: "updateClubImageFocalPoint" })
+	.schema(updateClubImageFocalPointSchema)
+	.action(async ({ parsedInput: { clubId, x, y }, ctx: { userId } }) => {
+		const currentUser = await db.query.clubMembers.findFirst({
+			where: (clubMember, { eq }) => eq(clubMember.userId, userId),
+		})
+
+		if (!currentUser || currentUser.role !== "owner") {
+			throw new ActionError("You are not an owner of this club")
+		}
+
+		const club = await db.query.clubs.findFirst({
+			where: (club, { eq }) => eq(club.id, clubId),
+		})
+
+		if (!club) {
+			throw new ActionError("Club not found")
+		}
+
+		if (!club.imageId) {
+			throw new ActionError("Club image not found")
+		}
+
+		await db
+			.update(images)
+			.set({ focalPointX: Math.round(x), focalPointY: Math.round(y) })
+			.where(eq(images.id, club.imageId))
+
+		return { success: true }
+	})

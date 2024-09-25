@@ -13,7 +13,7 @@ import type { ClubWithAlbums } from "./_queries"
 
 import { Button } from "~/components/ui/button"
 
-export function FormRecordClubModifySchedule({
+export function FormClubModifySchedule({
 	club,
 }: {
 	club: NonNullable<ClubWithAlbums>

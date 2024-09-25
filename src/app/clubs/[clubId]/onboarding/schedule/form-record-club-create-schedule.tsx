@@ -52,8 +52,6 @@ export function FormRecordClubCreateSchedule({
 		},
 	})
 
-	console.log(form.watch(), form.formState.errors)
-
 	const { execute } = useAction(addAlbumToClub, {
 		onSuccess({ data }) {
 			toast.success(
