@@ -511,3 +511,52 @@ export const blockMemberFromClub = authActionClient
 			revalidatePath(`/clubs/${clubId}/settings`)
 		},
 	)
+
+const changeMemberRoleSchema = z.object({
+	clubId: z.number(),
+	userId: z.string(),
+	role: z.enum(["admin", "member"]),
+})
+
+export const changeMemberRole = authActionClient
+	.metadata({ actionName: "changeMemberRole" })
+	.schema(changeMemberRoleSchema)
+	.action(
+		async ({
+			parsedInput: { clubId, userId, role },
+			ctx: { userId: currentUserId },
+		}) => {
+			const currentUser = await db.query.clubMembers.findFirst({
+				where: (clubMember, { eq }) => eq(clubMember.userId, currentUserId),
+			})
+
+			if (!currentUser) {
+				throw new ActionError("You are not a member of this club")
+			}
+
+			if (currentUser.role !== "owner") {
+				throw new ActionError("You are not an owner of this club")
+			}
+
+			const memberToChange = await db.query.clubMembers.findFirst({
+				where: (clubMember, { eq, and }) =>
+					and(eq(clubMember.clubId, clubId), eq(clubMember.userId, userId)),
+			})
+
+			if (!memberToChange) {
+				throw new ActionError("Member not found")
+			}
+
+			if (memberToChange.role === "owner") {
+				throw new ActionError("You cannot change the role of an owner")
+			}
+
+			await db
+				.update(clubMembers)
+				.set({ role })
+				.where(eq(clubMembers.id, memberToChange.id))
+
+			revalidatePath(`/clubs/${clubId}/settings`)
+			return { role }
+		},
+	)

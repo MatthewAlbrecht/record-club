@@ -19,7 +19,15 @@ import {
 	DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu"
 import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "~/components/ui/select"
+import {
 	blockMemberFromClub,
+	changeMemberRole,
 	removeMemberFromClub,
 } from "~/server/api/clubs-actions"
 import type { GetClubMembers } from "~/server/api/queries"
@@ -67,7 +75,50 @@ export const columns: ColumnDef<GetClubMembers[number]>[] = [
 		},
 		cell: ({ row }) => {
 			const clubMember = row.original
-			return clubMember.role.charAt(0).toUpperCase() + clubMember.role.slice(1)
+			const { execute: executeChangeRole, isExecuting } = useAction(
+				changeMemberRole,
+				{
+					onSuccess: ({ data }) => {
+						toast.success(
+							`${clubMember.user.username}'s is now ${
+								data?.role === "admin" ? "an admin" : "a member"
+							}`,
+						)
+					},
+					onError: ({ error }) => {
+						if (typeof error.serverError === "string") {
+							toast.error(error.serverError)
+						} else {
+							toast.error("Unable to remove member")
+						}
+					},
+				},
+			)
+
+			function handleChangeRole(role: "admin" | "member") {
+				executeChangeRole({
+					clubId: clubMember.clubId,
+					userId: clubMember.userId,
+					role,
+				})
+			}
+			return clubMember.role === "owner" ? (
+				"Owner"
+			) : (
+				<Select
+					onValueChange={handleChangeRole}
+					defaultValue={clubMember.role}
+					disabled={isExecuting}
+				>
+					<SelectTrigger className="w-[180px]">
+						<SelectValue placeholder="Role" />
+					</SelectTrigger>
+					<SelectContent>
+						<SelectItem value="admin">Admin</SelectItem>
+						<SelectItem value="member">Member</SelectItem>
+					</SelectContent>
+				</Select>
+			)
 		},
 	},
 	{
