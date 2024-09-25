@@ -285,6 +285,7 @@ export const images = createTable("image", {
 	url: varchar("url", { length: 256 }).notNull(),
 	focalPointX: integer("focal_point_x").default(50).notNull(),
 	focalPointY: integer("focal_point_y").default(50).notNull(),
+	key: varchar("key", { length: 256 }).notNull(),
 	uploadedById: varchar("uploaded_by_id")
 		.references(() => users.id)
 		.notNull(),

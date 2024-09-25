@@ -1,7 +1,7 @@
 "use client"
 
 import { toast } from "sonner"
-import { UploadDropzone } from "~/lib/uploadthing"
+import { UploadButton, UploadDropzone } from "~/lib/uploadthing"
 import type { GetClubWithAlbums } from "~/server/api/queries"
 import Image from "next/image"
 import type { SelectImage } from "~/server/db/schema"
@@ -24,14 +24,22 @@ export function FormClubGeneralInfo({
 
 			<div className="max-w-3xl">
 				{club.image ? (
-					<FocalPointPicker club={club} image={club.image} />
+					<div>
+						<FocalPointPicker club={club} image={club.image} />
+						<div className="mt-2 flex justify-start">
+							<UploadButton
+								endpoint="resetClubCoverPhoto"
+								input={{ clubId: club.id }}
+								onClientUploadComplete={(res) => {
+									toast.success("Upload Completed")
+								}}
+							/>
+						</div>
+					</div>
 				) : (
 					<UploadDropzone
 						endpoint="clubCoverPhoto"
 						input={{ clubId: club.id }}
-						onUploadBegin={() => {
-							toast.loading("Uploading...")
-						}}
 						onClientUploadComplete={(res) => {
 							toast.success("Upload Completed")
 						}}
@@ -95,8 +103,8 @@ function FocalPointPicker({
 			<Image
 				src={image.url}
 				alt="Club cover photo"
-				width={400}
-				height={400}
+				width={640}
+				height={360}
 				className="w-full h-auto"
 			/>
 			<div

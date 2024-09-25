@@ -13,7 +13,7 @@ import { Ratelimit } from "@upstash/ratelimit"
 const ratelimit = new Ratelimit({
 	redis: redis,
 	limiter: Ratelimit.slidingWindow(10, "10 s"),
-	prefix: "@upstash/ratelimit",
+	prefix: "@record-clubs/authenticated-actions",
 	// analytics: true,
 })
 
