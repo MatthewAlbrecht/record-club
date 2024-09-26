@@ -46,6 +46,13 @@ export async function getClubWithAlbums(clubId: number) {
 	return db.query.clubs.findFirst({
 		where: (clubs, { eq }) => eq(clubs.id, clubId),
 		with: {
+			questions: {
+				with: {
+					question: true,
+				},
+				orderBy: (clubQuestions, { asc }) => [asc(clubQuestions.order)],
+				where: (clubQuestions, { isNull }) => isNull(clubQuestions.inactiveAt),
+			},
 			image: true,
 			clubAlbums: {
 				columns: {
@@ -65,4 +72,27 @@ export async function getClubWithAlbums(clubId: number) {
 			},
 		},
 	})
+}
+
+export type GetActiveClubMemberById = Awaited<
+	ReturnType<typeof getActiveClubMemberById>
+>
+export const getActiveClubMemberById = async (
+	clubId: number,
+	userId: string,
+) => {
+	return db.query.clubMembers.findFirst({
+		where: (clubMembers, { eq, and, isNull }) =>
+			and(
+				eq(clubMembers.clubId, clubId),
+				eq(clubMembers.userId, userId),
+				isNull(clubMembers.inactiveAt),
+				isNull(clubMembers.blockedAt),
+			),
+	})
+}
+
+export type GetAllQuestions = Awaited<ReturnType<typeof getAllQuestions>>
+export const getAllQuestions = async () => {
+	return db.query.questions.findMany()
 }

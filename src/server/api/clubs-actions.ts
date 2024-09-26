@@ -1,6 +1,6 @@
 "use server" // don't forget to add this!
 
-import { eq } from "drizzle-orm"
+import { and, eq } from "drizzle-orm"
 import { revalidatePath } from "next/cache"
 import { z } from "zod"
 import { authActionClient } from "~/lib/safe-action"
@@ -44,11 +44,13 @@ export const createClub = authActionClient
 					.returning()
 
 				await trx.insert(clubMembers).values({
+					// biome-ignore lint/style/noNonNullAssertion: <explanation>
 					clubId: newClub[0]!.id,
 					userId,
 					role: "owner",
 				})
 
+				// biome-ignore lint/style/noNonNullAssertion: <explanation>
 				return newClub[0]!
 			})
 
@@ -109,6 +111,7 @@ export const addAlbumToClub = authActionClient
 					.then(([clubAlbum]) => clubAlbum)
 
 				const newClubAlbum = await db.query.clubAlbums.findFirst({
+					// biome-ignore lint/style/noNonNullAssertion: <explanation>
 					where: (clubAlbum, { eq }) => eq(clubAlbum.id, clubAlbumInsert!.id),
 					with: {
 						album: true,
@@ -116,6 +119,7 @@ export const addAlbumToClub = authActionClient
 				})
 
 				revalidatePath(`/clubs/${clubId}/settings`)
+				// biome-ignore lint/style/noNonNullAssertion: <explanation>
 				return { clubAlbum: newClubAlbum! }
 			} catch (error) {
 				if (error instanceof Error) {
@@ -343,6 +347,7 @@ export const submitClubAlbumProgress = authActionClient
 				.map(({ clubQuestionId, answer }) => {
 					const question = clubQuestions.find(({ id }) => id === clubQuestionId)
 					const questionCategory = question?.question.category
+					// biome-ignore lint/style/noNonNullAssertion: <explanation>
 					const questionId = question!.question.id
 
 					const baseAnswer = {
@@ -409,6 +414,7 @@ export const submitClubAlbumProgress = authActionClient
 					})
 					.returning()
 
+				// biome-ignore lint/style/noNonNullAssertion: <explanation>
 				const progressId = userClubAlbumProgress[0]!.id
 
 				const updatedAnswerValues = answerValues.map((answer) => ({
@@ -598,6 +604,139 @@ export const updateClubImageFocalPoint = authActionClient
 			.update(images)
 			.set({ focalPointX: Math.round(x), focalPointY: Math.round(y) })
 			.where(eq(images.id, club.imageId))
+
+		revalidatePath(`/clubs/${clubId}`)
+
+		return { success: true }
+	})
+
+const OrderConstants = {
+	HIDDEN_QUESTION: 999,
+	NEWLY_ADDED: 998,
+}
+
+const hideQuestionFromClubSchema = z.object({
+	clubId: z.number(),
+	clubQuestionId: z.number(),
+})
+
+export const hideQuestionFromClub = authActionClient
+	.metadata({ actionName: "hideQuestionFromClub" })
+	.schema(hideQuestionFromClubSchema)
+	.action(
+		async ({ parsedInput: { clubId, clubQuestionId }, ctx: { userId } }) => {
+			const currentUser = await db.query.clubMembers.findFirst({
+				where: (clubMember, { eq, and }) =>
+					and(eq(clubMember.userId, userId), eq(clubMember.clubId, clubId)),
+			})
+
+			if (!currentUser || currentUser.role !== "owner") {
+				throw new ActionError("You are not an owner of this club")
+			}
+
+			const question = await db.query.clubQuestions.findFirst({
+				where: (clubQuestion, { eq }) => eq(clubQuestion.id, clubQuestionId),
+			})
+
+			if (!question) {
+				throw new ActionError("Question not found")
+			}
+
+			await db
+				.update(clubQuestions)
+				.set({
+					inactiveAt: new Date(),
+					order: OrderConstants.HIDDEN_QUESTION,
+				})
+				.where(eq(clubQuestions.id, clubQuestionId))
+
+			revalidatePath(`/clubs/${clubId}/settings/questions`)
+
+			return { success: true }
+		},
+	)
+
+const reorderClubQuestionsSchema = z.object({
+	clubId: z.number(),
+	clubQuestionIds: z.array(z.number()),
+})
+
+export const reorderClubQuestions = authActionClient
+	.metadata({ actionName: "reorderClubQuestions" })
+	.schema(reorderClubQuestionsSchema)
+	.action(
+		async ({ parsedInput: { clubId, clubQuestionIds }, ctx: { userId } }) => {
+			const currentUser = await db.query.clubMembers.findFirst({
+				where: (clubMember, { eq, and }) =>
+					and(eq(clubMember.userId, userId), eq(clubMember.clubId, clubId)),
+			})
+
+			if (!currentUser || currentUser.role !== "owner") {
+				throw new ActionError("You are not an owner of this club")
+			}
+
+			const clubQuestionUpdates = clubQuestionIds.map(
+				(clubQuestionId, index) => ({
+					id: clubQuestionId,
+					order: index + 1,
+				}),
+			)
+
+			console.log("clubQuestionUpdates", clubQuestionUpdates)
+
+			await db.transaction(async (trx) => {
+				for (const clubQuestionUpdate of clubQuestionUpdates) {
+					await trx
+						.update(clubQuestions)
+						.set({ order: clubQuestionUpdate.order })
+						.where(eq(clubQuestions.id, clubQuestionUpdate.id))
+				}
+			})
+
+			return { success: true }
+		},
+	)
+
+const addQuestionToClubSchema = z.object({
+	clubId: z.number(),
+	questionId: z.number(),
+})
+
+export const addQuestionToClub = authActionClient
+	.metadata({ actionName: "addQuestionToClub" })
+	.schema(addQuestionToClubSchema)
+	.action(async ({ parsedInput: { clubId, questionId }, ctx: { userId } }) => {
+		const currentUser = await db.query.clubMembers.findFirst({
+			where: (clubMember, { eq, and }) =>
+				and(eq(clubMember.userId, userId), eq(clubMember.clubId, clubId)),
+		})
+
+		if (!currentUser || currentUser.role !== "owner") {
+			throw new ActionError("You are not an owner of this club")
+		}
+
+		const question = await db.query.questions.findFirst({
+			where: (question, { eq }) => eq(question.id, questionId),
+		})
+
+		if (!question) {
+			throw new ActionError("Question not found")
+		}
+
+		await db
+			.insert(clubQuestions)
+			.values({
+				clubId,
+				questionId,
+				order: OrderConstants.NEWLY_ADDED,
+			})
+			.onConflictDoUpdate({
+				target: [clubQuestions.clubId, clubQuestions.questionId],
+				set: { order: OrderConstants.NEWLY_ADDED, inactiveAt: null },
+			})
+
+		revalidatePath(`/clubs/${clubId}/settings/questions`)
+		revalidatePath(`/clubs/${clubId}/settings`)
 
 		return { success: true }
 	})

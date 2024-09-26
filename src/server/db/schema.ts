@@ -145,6 +145,8 @@ export const clubQuestions = createTable(
 		questionId: integer("question_id")
 			.references(() => questions.id)
 			.notNull(),
+		inactiveAt: timestamp("inactive_at", { withTimezone: true }),
+		order: integer("order").notNull().default(0),
 		createdAt: timestamp("created_at", { withTimezone: true })
 			.default(sql`CURRENT_TIMESTAMP`)
 			.notNull(),
@@ -313,6 +315,7 @@ export const clubsRelations = relations(clubs, ({ many, one }) => ({
 		fields: [clubs.imageId],
 		references: [images.id],
 	}),
+	questions: many(clubQuestions),
 }))
 
 export const clubMembersRelations = relations(clubMembers, ({ one }) => ({

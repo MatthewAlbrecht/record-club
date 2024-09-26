@@ -12,6 +12,7 @@ export class DatabaseError extends Error {
 		options?: ErrorOptions,
 	) {
 		const pgErrorCode =
+			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 			options?.cause instanceof Error ? (options.cause as any).code : undefined
 
 		const message =

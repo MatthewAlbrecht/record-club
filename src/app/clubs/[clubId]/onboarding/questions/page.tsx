@@ -1,7 +1,7 @@
+import { auth } from "@clerk/nextjs/server"
 import { notFound } from "next/navigation"
 import { db } from "~/server/db"
 import { FormRecordClubQuestionSelection } from "./form-record-club-question-selection"
-import { auth } from "@clerk/nextjs/server"
 
 export default async function ClubsCreatePage({
 	params,

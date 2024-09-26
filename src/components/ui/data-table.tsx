@@ -2,14 +2,15 @@
 
 import {
 	type ColumnDef,
+	type SortingState,
+	type TableMeta,
 	flexRender,
 	getCoreRowModel,
 	getPaginationRowModel,
 	getSortedRowModel,
-	type SortingState,
-	type TableMeta,
 	useReactTable,
 } from "@tanstack/react-table"
+import { useState } from "react"
 import {
 	Table,
 	TableBody,
@@ -19,7 +20,6 @@ import {
 	TableRow,
 } from "~/components/ui/table"
 import { Button } from "./button"
-import { useState } from "react"
 import { DataTablePagination } from "./data-table-pagination"
 
 type DataTableProps<TData, TValue> = {

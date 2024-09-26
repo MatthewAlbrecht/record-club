@@ -1,9 +1,9 @@
+import { auth } from "@clerk/nextjs/server"
 import { eq } from "drizzle-orm"
 import { notFound } from "next/navigation"
 import { db } from "~/server/db"
 import { clubAlbums } from "~/server/db/schema"
 import { FormRecordClubCreateSchedule } from "./form-record-club-create-schedule"
-import { auth } from "@clerk/nextjs/server"
 
 export default async function ClubsOnboardingSchedulePage({
 	params,

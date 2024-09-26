@@ -1,3 +1,4 @@
+import { auth } from "@clerk/nextjs/server"
 import { Settings } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
@@ -8,7 +9,6 @@ import { Routes } from "~/lib/routes"
 import { db } from "~/server/db"
 import type { SelectClub } from "~/server/db/schema"
 import { ButtonJoinClub } from "./button-club-actions"
-import { auth } from "@clerk/nextjs/server"
 
 export default async function RecordClubHome({
 	params: { clubId },
@@ -85,7 +85,7 @@ async function ClubPageIsMember({
 									aria-label="Club Settings"
 									className="px-2 text-slate-50"
 								>
-									<Link href={Routes.ClubSettings(club.id)}>
+									<Link href={Routes.ClubSettings(club.id, "general")}>
 										<Settings className="h-6 w-6" />
 									</Link>
 								</Button>

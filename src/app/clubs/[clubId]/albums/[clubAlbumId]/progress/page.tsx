@@ -1,6 +1,6 @@
+import { auth } from "@clerk/nextjs/server"
 import { notFound } from "next/navigation"
 import { db } from "~/server/db"
-import { auth } from "@clerk/nextjs/server"
 import { FormQuestionnaire } from "./_components/form-questionnaire"
 
 interface ProgressPageProps {

@@ -1,6 +1,8 @@
 import { type UseQueryOptions, useQuery } from "@tanstack/react-query"
 import { CalendarIcon, Check, PlusIcon, Search } from "lucide-react"
+import { useAction } from "next-safe-action/hooks"
 import { useState } from "react"
+import { toast } from "sonner"
 import { z } from "zod"
 import { Button } from "~/components/ui/button"
 import {
@@ -19,10 +21,8 @@ import {
 import { useDebouncedState } from "~/lib/hooks/useDebouncedState"
 import { useZodForm } from "~/lib/hooks/useZodForm"
 import { cn } from "~/lib/utils"
-import type { SelectAlbum } from "~/server/db/schema"
-import { useAction } from "next-safe-action/hooks"
-import { toast } from "sonner"
 import { createAlbum } from "~/server/api/album-actions"
+import type { SelectAlbum } from "~/server/db/schema"
 
 import {
 	Form,
@@ -150,9 +150,10 @@ function EmptyCommandList({
 
 	const { execute } = useAction(createAlbum, {
 		onSuccess: ({ data }) => {
-			toast.success(`${data?.album.title} added`)
+			if (!data) return
+			toast.success(`${data.album.title} added`)
 			setOpen(false)
-			onAlbumAdd?.(data!.album)
+			onAlbumAdd?.(data.album)
 		},
 		onError: ({ error }) => {
 			if (typeof error.serverError === "string") {

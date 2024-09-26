@@ -29,7 +29,7 @@ export const createAlbum = authActionClient
 			const releaseDay = releaseDate ? new Date(releaseDate).getDate() : null
 
 			try {
-				const album = await db
+				const [album] = await db
 					.insert(albums)
 					.values({
 						title,
@@ -40,7 +40,11 @@ export const createAlbum = authActionClient
 					})
 					.returning()
 
-				return { album: album[0]! }
+				if (!album) {
+					throw new Error("Failed to insert album")
+				}
+
+				return { album }
 			} catch (error) {
 				if (error instanceof Error) {
 					throw new DatabaseError(

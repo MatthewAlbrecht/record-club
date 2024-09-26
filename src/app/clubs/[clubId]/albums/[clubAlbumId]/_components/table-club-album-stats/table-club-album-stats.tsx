@@ -6,6 +6,7 @@ import {
 	getCoreRowModel,
 	useReactTable,
 } from "@tanstack/react-table"
+import { DataTable } from "~/components/ui/data-table"
 import type {
 	QuestionCategory,
 	SelectAnswer,
@@ -14,7 +15,6 @@ import type {
 	SelectUser,
 	SelectUserClubAlbumProgress,
 } from "~/server/db/schema"
-import { DataTable } from "~/components/ui/data-table"
 
 type Props = {
 	clubQuestions: (SelectClubQuestion & { question: SelectQuestion })[]

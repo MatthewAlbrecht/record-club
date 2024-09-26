@@ -2,7 +2,7 @@ import { auth } from "@clerk/nextjs/server"
 import { Ratelimit } from "@upstash/ratelimit"
 import { eq } from "drizzle-orm"
 import { revalidatePath } from "next/cache"
-import { createUploadthing, type FileRouter } from "uploadthing/next"
+import { type FileRouter, createUploadthing } from "uploadthing/next"
 import { UploadThingError } from "uploadthing/server"
 import { z } from "zod"
 import { db, redis } from "~/server/db"
@@ -85,7 +85,7 @@ export const ourFileRouter = {
 				return newImage
 			})
 
-			revalidatePath(`/clubs/${metadata.clubId}/settings`)
+			revalidatePath(`/clubs/${metadata.clubId}/settings/general`)
 
 			// !!! Whatever is returned here is sent to the clientside `onClientUploadComplete` callback
 			return {
@@ -164,7 +164,7 @@ export const ourFileRouter = {
 				return newImage
 			})
 
-			revalidatePath(`/clubs/${metadata.clubId}/settings`)
+			revalidatePath(`/clubs/${metadata.clubId}/settings/general`)
 
 			const imageId = metadata.imageId
 

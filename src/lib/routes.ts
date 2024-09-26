@@ -5,7 +5,10 @@ export const Routes = {
 	SignIn: "/sign-in",
 	Discover: "/discover",
 	Club: (clubId: Id) => `/clubs/${clubId}`,
-	ClubSettings: (clubId: Id) => `/clubs/${clubId}/settings`,
+	ClubSettings: (
+		clubId: Id,
+		slug: "members" | "general" | "schedule" | "questions",
+	) => `/clubs/${clubId}/settings/${slug}`,
 	ClubOnboardingScheduling: (clubId: Id) =>
 		`/clubs/${clubId}/onboarding/schedule`,
 	ClubOnboardingQuestions: (clubId: Id) =>

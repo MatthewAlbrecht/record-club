@@ -1,18 +1,20 @@
 "use client"
 
-import { toast } from "sonner"
-import { UploadButton, UploadDropzone } from "~/lib/uploadthing"
-import type { GetClubWithAlbums } from "~/server/api/queries"
-import Image from "next/image"
-import type { SelectImage } from "~/server/db/schema"
-import { useState } from "react"
-import { useDebounce } from "~/lib/hooks/useDebounce"
-import { updateClubImageFocalPoint } from "~/server/api/clubs-actions"
 import { useAction } from "next-safe-action/hooks"
+import Image from "next/image"
+import { useRouter } from "next/navigation"
+import { useState } from "react"
+import { toast } from "sonner"
+import { useDebounce } from "~/lib/hooks/useDebounce"
+import { UploadButton, UploadDropzone } from "~/lib/uploadthing"
+import { updateClubImageFocalPoint } from "~/server/api/clubs-actions"
+import type { GetClubWithAlbums } from "~/server/api/queries"
+import type { SelectImage } from "~/server/db/schema"
 
 export function FormClubGeneralInfo({
 	club,
 }: { club: NonNullable<GetClubWithAlbums> }) {
+	const router = useRouter()
 	return (
 		<div>
 			<h1 className="text-base font-semibold leading-7 text-slate-900">
@@ -32,6 +34,7 @@ export function FormClubGeneralInfo({
 								input={{ clubId: club.id }}
 								onClientUploadComplete={(res) => {
 									toast.success("Upload Completed")
+									router.refresh()
 								}}
 							/>
 						</div>
@@ -42,6 +45,7 @@ export function FormClubGeneralInfo({
 						input={{ clubId: club.id }}
 						onClientUploadComplete={(res) => {
 							toast.success("Upload Completed")
+							router.refresh()
 						}}
 						onUploadError={(error: Error) => {
 							toast.error(error.message)

@@ -6,11 +6,11 @@ import { useAction } from "next-safe-action/hooks"
 import { useState } from "react"
 import { toast } from "sonner"
 import { TypeaheadAlbums } from "~/components/typeahead-albums"
+import { Button } from "~/components/ui/button"
 import { Calendar } from "~/components/ui/calendar"
 import { addAlbumToClub, deleteClubAlbum } from "~/server/api/clubs-actions"
-import type { SelectAlbum } from "~/server/db/schema"
-import { Button } from "~/components/ui/button"
 import type { GetClubWithAlbums } from "~/server/api/queries"
+import type { SelectAlbum } from "~/server/db/schema"
 
 export function FormClubModifySchedule({
 	club,

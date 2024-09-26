@@ -1,10 +1,10 @@
+import type { Column } from "@tanstack/react-table"
 import {
 	ArrowDownIcon,
 	ArrowUpIcon,
 	ChevronsUpDownIcon,
 	EyeOff,
 } from "lucide-react"
-import type { Column } from "@tanstack/react-table"
 
 import { cn } from "~/lib/utils"
 import { Button } from "./button"
