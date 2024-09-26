@@ -11,6 +11,7 @@ import { TableClubMembers } from "../_components/data-table-club-members/table-c
 import { FormClubGeneralInfo } from "../_components/form-club-general-info"
 import { FormClubModifySchedule } from "../_components/form-club-modify-schedule"
 import { PageClubSettingsQuestions } from "../_components/page-club-settings-questions"
+import { PageClubSettingsSchedule } from "../_components/page-club-schedule"
 
 export default async function ClubSettingsPage({
 	params: { clubId, settingsSlug },
@@ -60,8 +61,7 @@ export default async function ClubSettingsPage({
 				</Link>
 			</TabsList>
 			<TabsContent value="schedule" className="mt-0">
-				<h2 className="text-xl font-bold my-8">Schedule</h2>
-				<FormClubModifySchedule club={club} />
+				<PageClubSettingsSchedule club={club} />
 			</TabsContent>
 			<TabsContent value="members" className="mt-0">
 				<h2 className="text-xl font-bold my-8">Members</h2>

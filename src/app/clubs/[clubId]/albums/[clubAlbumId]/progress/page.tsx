@@ -42,7 +42,12 @@ export default async function ProgressPage({
 	}
 
 	const questions = await db.query.clubQuestions.findMany({
-		where: (clubQuestions, { eq }) => eq(clubQuestions.clubId, parsedClubId),
+		where: (clubQuestions, { eq, and, isNull }) =>
+			and(
+				eq(clubQuestions.clubId, parsedClubId),
+				isNull(clubQuestions.inactiveAt),
+			),
+		orderBy: (clubQuestions, { asc }) => [asc(clubQuestions.order)],
 		with: {
 			question: true,
 		},
