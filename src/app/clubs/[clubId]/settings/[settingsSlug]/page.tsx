@@ -7,10 +7,10 @@ import {
 	getActiveClubMemberById,
 	getClubWithAlbums,
 } from "~/server/api/queries"
+import { TableClubMembers } from "../_components/data-table-club-members/table-club-members"
 import { FormClubGeneralInfo } from "../_components/form-club-general-info"
 import { FormClubModifySchedule } from "../_components/form-club-modify-schedule"
 import { PageClubSettingsQuestions } from "../_components/page-club-settings-questions"
-import { TableClubMembers } from "../_components/data-table-club-members/table-club-members"
 
 export default async function ClubSettingsPage({
 	params: { clubId, settingsSlug },

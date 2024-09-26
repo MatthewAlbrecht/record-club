@@ -10,48 +10,54 @@ import { UploadButton, UploadDropzone } from "~/lib/uploadthing"
 import { updateClubImageFocalPoint } from "~/server/api/clubs-actions"
 import type { GetClubWithAlbums } from "~/server/api/queries"
 import type { SelectImage } from "~/server/db/schema"
+import { FormRecordClubModifyMeta } from "./form-club-modify-meta"
 
 export function FormClubGeneralInfo({
 	club,
 }: { club: NonNullable<GetClubWithAlbums> }) {
 	const router = useRouter()
 	return (
-		<div>
-			<h1 className="text-base font-semibold leading-7 text-slate-900">
-				Cover photo
-			</h1>
-			<p className="mt-1 text-sm leading-6 text-slate-600">
-				Upload a cover photo for your club and choose a focal point.
-			</p>
+		<div className="divide-y">
+			<div className="pb-8">
+				<h1 className="text-base font-semibold leading-7 text-slate-900">
+					Cover photo
+				</h1>
+				<p className="mt-1 text-sm leading-6 text-slate-600">
+					Upload a cover photo for your club and choose a focal point.
+				</p>
 
-			<div className="max-w-3xl">
-				{club.image ? (
-					<div>
-						<FocalPointPicker club={club} image={club.image} />
-						<div className="mt-2 flex justify-start">
-							<UploadButton
-								endpoint="resetClubCoverPhoto"
-								input={{ clubId: club.id }}
-								onClientUploadComplete={(res) => {
-									toast.success("Upload Completed")
-									router.refresh()
-								}}
-							/>
+				<div className="max-w-3xl">
+					{club.image ? (
+						<div>
+							<FocalPointPicker club={club} image={club.image} />
+							<div className="mt-2 flex justify-start">
+								<UploadButton
+									endpoint="resetClubCoverPhoto"
+									input={{ clubId: club.id }}
+									onClientUploadComplete={(res) => {
+										toast.success("Upload Completed")
+										router.refresh()
+									}}
+								/>
+							</div>
 						</div>
-					</div>
-				) : (
-					<UploadDropzone
-						endpoint="clubCoverPhoto"
-						input={{ clubId: club.id }}
-						onClientUploadComplete={(res) => {
-							toast.success("Upload Completed")
-							router.refresh()
-						}}
-						onUploadError={(error: Error) => {
-							toast.error(error.message)
-						}}
-					/>
-				)}
+					) : (
+						<UploadDropzone
+							endpoint="clubCoverPhoto"
+							input={{ clubId: club.id }}
+							onClientUploadComplete={(res) => {
+								toast.success("Upload Completed")
+								router.refresh()
+							}}
+							onUploadError={(error: Error) => {
+								toast.error(error.message)
+							}}
+						/>
+					)}
+				</div>
+			</div>
+			<div className="pt-8">
+				<FormRecordClubModifyMeta club={club} />
 			</div>
 		</div>
 	)

@@ -1,6 +1,6 @@
+import { DataTable } from "~/components/ui/data-table"
 import type { GetAllQuestions, GetClubWithAlbums } from "~/server/api/queries"
 import { columns } from "./columns-table-club-questions"
-import { DataTable } from "~/components/ui/data-table"
 
 export function TableClubQuestions({
 	questions,

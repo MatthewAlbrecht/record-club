@@ -2,8 +2,6 @@
 
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useAction } from "next-safe-action/hooks"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { toast } from "sonner"
 import { z } from "zod"
@@ -17,51 +15,53 @@ import {
 	FormMessage,
 } from "~/components/ui/form"
 import { Input } from "~/components/ui/input"
-import { Separator } from "~/components/ui/separator"
 import { Textarea } from "~/components/ui/textarea"
-import { createClub } from "~/server/api/clubs-actions"
+import { modifyClubMeta } from "~/server/api/clubs-actions"
+import type { GetClubWithAlbums } from "~/server/api/queries"
 
-export const createClubSchema = z.object({
+export const modifyClubMetaSchema = z.object({
 	name: z.string().min(1),
 	shortDescription: z.string().min(3),
 	longDescription: z.string().min(3),
 })
 
-export type CreateClubForm = z.infer<typeof createClubSchema>
+export type ModifyClubMetaForm = z.infer<typeof modifyClubMetaSchema>
 
-export function FormRecordClubCreateMeta() {
-	const router = useRouter()
+export function FormRecordClubModifyMeta({
+	club,
+}: { club: NonNullable<GetClubWithAlbums> }) {
 	const form = useForm({
 		defaultValues: {
-			name: "",
-			shortDescription: "",
-			longDescription: "",
+			name: club.name,
+			shortDescription: club.shortDescription,
+			longDescription: club.longDescription,
 		},
-		resolver: zodResolver(createClubSchema),
+		resolver: zodResolver(modifyClubMetaSchema),
 	})
 
-	const { execute } = useAction(createClub, {
+	const { execute } = useAction(modifyClubMeta, {
 		onSuccess({ data }) {
-			if (!data) {
-				return
-			}
-			toast.success(`${data.club.name} created successfully`)
-			router.push(`/clubs/${data.club.id}/onboarding/schedule`)
+			if (!data) return
+			toast.success("Club updated")
+		},
+		onError: ({ error }) => {
+			toast.error(error.serverError ?? "Unable to update club")
 		},
 	})
 
-	function onSubmit(data: CreateClubForm) {
-		execute(data)
+	function onSubmit(data: ModifyClubMetaForm) {
+		execute({ ...data, clubId: club.id })
 	}
 
 	return (
 		<Form {...form}>
 			<form onSubmit={form.handleSubmit(onSubmit)}>
 				<h1 className="text-base font-semibold leading-7 text-slate-900">
-					Create a record club
+					Modify club information
 				</h1>
 				<p className="mt-1 text-sm leading-6 text-slate-600">
-					General information about the club
+					This is your club's chance to shine. Use this section to tell your
+					members what your club is all about.
 				</p>
 
 				<div className="mt-10">
@@ -107,15 +107,8 @@ export function FormRecordClubCreateMeta() {
 						/>
 					</div>
 
-					<Separator className="my-12 border-slate-900/10" />
-
-					<div className="flex items-center justify-end gap-x-6">
-						<Button type="submit" variant="ghost" asChild>
-							<Link href="/">Cancel</Link>
-						</Button>
-						<Button type="submit" className="">
-							Save Club
-						</Button>
+					<div className="flex items-center justify-end gap-x-6 mt-4">
+						<Button type="submit">Save changes</Button>
 					</div>
 				</div>
 			</form>

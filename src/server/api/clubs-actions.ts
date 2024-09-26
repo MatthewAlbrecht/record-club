@@ -740,3 +740,42 @@ export const addQuestionToClub = authActionClient
 
 		return { success: true }
 	})
+
+const modifyClubMetaSchema = z.object({
+	clubId: z.number(),
+	name: z.string().min(1),
+	shortDescription: z.string().min(3),
+	longDescription: z.string().min(3),
+})
+
+export const modifyClubMeta = authActionClient
+	.metadata({ actionName: "modifyClubMeta" })
+	.schema(modifyClubMetaSchema)
+	.action(
+		async ({
+			parsedInput: { clubId, name, shortDescription, longDescription },
+			ctx: { userId },
+		}) => {
+			const currentUser = await db.query.clubMembers.findFirst({
+				where: (clubMember, { eq, and }) =>
+					and(eq(clubMember.userId, userId), eq(clubMember.clubId, clubId)),
+			})
+
+			if (!currentUser || currentUser.role !== "owner") {
+				throw new ActionError("You are not an owner of this club")
+			}
+
+			await db
+				.update(clubs)
+				.set({
+					name,
+					shortDescription,
+					longDescription,
+				})
+				.where(eq(clubs.id, clubId))
+
+			revalidatePath(`/clubs/${clubId}/settings`)
+
+			return { success: true }
+		},
+	)
