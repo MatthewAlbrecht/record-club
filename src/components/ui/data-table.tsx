@@ -19,7 +19,6 @@ import {
 	TableHeader,
 	TableRow,
 } from "~/components/ui/table"
-import { Button } from "./button"
 import { DataTablePagination } from "./data-table-pagination"
 
 type DataTableProps<TData, TValue> = {

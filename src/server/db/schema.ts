@@ -169,7 +169,7 @@ export const clubAlbums = createTable(
 		albumId: integer("album_id")
 			.references(() => albums.id)
 			.notNull(),
-		scheduledFor: date("scheduled_for"),
+		scheduledFor: date("scheduled_for").notNull(),
 		createdById: varchar("created_by_id")
 			.references(() => users.id)
 			.notNull(),

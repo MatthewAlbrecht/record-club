@@ -3,7 +3,7 @@
 import { z } from "zod"
 import { authActionClient } from "~/lib/safe-action"
 import { db } from "../db"
-import { albums, clubs } from "../db/schema"
+import { albums } from "../db/schema"
 import { DatabaseError, PGErrorCodes } from "./utils"
 
 const createAlbumSchema = z.object({

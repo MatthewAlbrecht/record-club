@@ -1,11 +1,6 @@
 "use client"
 
-import {
-	type ColumnDef,
-	flexRender,
-	getCoreRowModel,
-	useReactTable,
-} from "@tanstack/react-table"
+import type { ColumnDef } from "@tanstack/react-table"
 import { DataTable } from "~/components/ui/data-table"
 import type {
 	QuestionCategory,

@@ -9,9 +9,8 @@ import {
 } from "~/server/api/queries"
 import { TableClubMembers } from "../_components/data-table-club-members/table-club-members"
 import { FormClubGeneralInfo } from "../_components/form-club-general-info"
-import { FormClubModifySchedule } from "../_components/form-club-modify-schedule"
-import { PageClubSettingsQuestions } from "../_components/page-club-settings-questions"
 import { PageClubSettingsSchedule } from "../_components/page-club-schedule"
+import { PageClubSettingsQuestions } from "../_components/page-club-settings-questions"
 
 export default async function ClubSettingsPage({
 	params: { clubId, settingsSlug },

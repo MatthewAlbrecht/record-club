@@ -19,7 +19,7 @@ import {
 } from "~/components/ui/form"
 import { Separator } from "~/components/ui/separator"
 import { useZodForm } from "~/lib/hooks/useZodForm"
-import { addAlbumToClub, removeAlbumFromClub } from "~/server/api/clubs-actions"
+import { addAlbumToClub } from "~/server/api/clubs-actions"
 import type {
 	SelectAlbum,
 	SelectClub,

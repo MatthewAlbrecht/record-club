@@ -9,7 +9,7 @@ import { Badge } from "~/components/ui/badge"
 import { Button } from "~/components/ui/button"
 import { DataTableColumnHeader } from "~/components/ui/data-table-column-header"
 import { addQuestionToClub } from "~/server/api/clubs-actions"
-import type { GetAllQuestions, GetClubMembers } from "~/server/api/queries"
+import type { GetAllQuestions } from "~/server/api/queries"
 
 export const columns: ColumnDef<NonNullable<GetAllQuestions>[number]>[] = [
 	{

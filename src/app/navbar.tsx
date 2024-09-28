@@ -1,5 +1,3 @@
-import { CompassIcon, HomeIcon, SquareLibraryIcon } from "lucide-react"
-
 import { NavbarClubList } from "./navbar-club-list"
 import { NavbarNavigation } from "./navbar-navigation"
 import { UserLink } from "./navbar-user-link"

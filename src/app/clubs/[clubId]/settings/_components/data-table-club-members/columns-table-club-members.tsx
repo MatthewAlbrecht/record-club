@@ -1,7 +1,7 @@
 "use client"
 
 import type { ColumnDef } from "@tanstack/react-table"
-import { AlertCircleIcon, ArrowUpDown, MoreHorizontal } from "lucide-react"
+import { AlertCircleIcon, MoreHorizontal } from "lucide-react"
 import { useAction } from "next-safe-action/hooks"
 import Link from "next/link"
 import { useState } from "react"

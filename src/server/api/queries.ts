@@ -1,7 +1,7 @@
 "use server"
 
 import { auth } from "@clerk/nextjs/server"
-import { notFound, redirect } from "next/navigation"
+import { notFound } from "next/navigation"
 import { db } from "../db"
 
 export type GetClubMembers = Awaited<ReturnType<typeof getClubMembers>>

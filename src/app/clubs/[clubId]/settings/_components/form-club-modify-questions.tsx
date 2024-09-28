@@ -7,7 +7,6 @@ import { useEffect, useState } from "react"
 import { toast } from "sonner"
 import { Badge } from "~/components/ui/badge"
 import { Button } from "~/components/ui/button"
-import { DataTable } from "~/components/ui/data-table"
 import { DialogConfirmation } from "~/components/ui/dialog-confirmation"
 import {
 	Sortable,
@@ -20,7 +19,6 @@ import {
 	reorderClubQuestions,
 } from "~/server/api/clubs-actions"
 import type { GetAllQuestions, GetClubWithAlbums } from "~/server/api/queries"
-import { columns } from "./data-table-club-questions/columns-table-club-questions"
 import { TableClubQuestions } from "./data-table-club-questions/table-club-questions"
 
 export function FormClubModifyQuestions({

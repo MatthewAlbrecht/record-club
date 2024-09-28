@@ -1,4 +1,4 @@
-import { CalendarIcon, ChevronDown, ChevronDownIcon } from "lucide-react"
+import { ChevronDownIcon } from "lucide-react"
 import type { DayPicker } from "react-day-picker"
 import { Button } from "./button"
 import { Calendar } from "./calendar"

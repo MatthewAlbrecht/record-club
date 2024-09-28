@@ -1,4 +1,4 @@
-import { CirclePlusIcon, LibraryIcon } from "lucide-react"
+import { LibraryIcon } from "lucide-react"
 
 export function ButtonCreateLarge({ label }: { label: string }) {
 	return (
