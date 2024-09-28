@@ -84,7 +84,7 @@ export function TypeaheadAlbums({
 			<PopoverContent className="w-[300px] p-0">
 				<Command shouldFilter={false}>
 					<CommandInput
-						placeholder="Search framework..."
+						placeholder="Search or Spotify URI..."
 						value={value}
 						onValueChange={handleInputChange}
 					/>
