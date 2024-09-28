@@ -1,10 +1,10 @@
 import { useAction } from "next-safe-action/hooks"
 import type { Dispatch, SetStateAction } from "react"
-import { Form } from "react-hook-form"
 import { toast } from "sonner"
 import { z } from "zod"
 import { TypeaheadAlbums } from "~/components/typeahead-albums"
 import {
+	Form,
 	FormControl,
 	FormField,
 	FormItem,
