@@ -52,14 +52,6 @@ export function FormClubModifyQuestions({
 
 	const debouncedExecuteReorderQuestions = useDebounce(
 		(...args: Parameters<typeof executeReorderQuestions>) => {
-			console.log(
-				"value being sent to server",
-				args[0].clubQuestionIds.map(
-					(clubQuestionId) =>
-						clubQuestions.find((question) => question.id === clubQuestionId)
-							?.question.label,
-				),
-			)
 			executeReorderQuestions(...args)
 		},
 		1000,

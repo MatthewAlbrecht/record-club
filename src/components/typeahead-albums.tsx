@@ -47,9 +47,11 @@ import {
 export function TypeaheadAlbums({
 	selected,
 	setSelected,
+	onEmptyClick,
 }: {
 	selected?: Pick<SelectAlbum, "id" | "title" | "artist">
 	setSelected: (album: SelectAlbum) => void
+	onEmptyClick?: () => void
 }) {
 	const [open, setOpen] = useState(false)
 	const [value, setValue] = useState("")
@@ -69,7 +71,7 @@ export function TypeaheadAlbums({
 	}
 
 	return (
-		<Popover open={open} onOpenChange={setOpen}>
+		<Popover open={open} onOpenChange={setOpen} modal={true}>
 			<PopoverTrigger asChild>
 				<Button
 					variant="outline"
@@ -81,7 +83,7 @@ export function TypeaheadAlbums({
 					<Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
 				</Button>
 			</PopoverTrigger>
-			<PopoverContent className="w-[300px] p-0">
+			<PopoverContent className="p-0">
 				<Command shouldFilter={false}>
 					<CommandInput
 						placeholder="Search or Spotify URI..."
@@ -89,7 +91,20 @@ export function TypeaheadAlbums({
 						onValueChange={handleInputChange}
 					/>
 					<CommandList key={JSON.stringify(data)}>
-						<EmptyCommandList onAlbumAdd={handleAlbumAdd} />
+						{onEmptyClick ? (
+							<CommandEmpty>
+								<button
+									type="button"
+									className="flex w-full cursor-pointer items-center justify-center p-6"
+									onClick={onEmptyClick}
+								>
+									<PlusIcon className="mr-2 h-4 w-4" />
+									Create new album
+								</button>
+							</CommandEmpty>
+						) : (
+							<EmptyCommandList onAlbumAdd={handleAlbumAdd} />
+						)}
 						{data?.albums && data.albums.length > 0 && (
 							<CommandGroup>
 								{data?.albums.map((album) => (

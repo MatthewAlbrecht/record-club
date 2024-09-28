@@ -1,5 +1,5 @@
 import type { GetClubWithAlbums } from "~/server/api/queries"
-import FormClubCalendar from "./form-club-calendar"
+import FormClubCalendar from "./calendar-scheduler/form-club-calendar"
 
 export async function PageClubSettingsSchedule({
 	club,
@@ -8,7 +8,6 @@ export async function PageClubSettingsSchedule({
 		<>
 			<h2 className="text-xl font-bold my-8">Schedule</h2>
 			<FormClubCalendar club={club} />
-			{/* <FormClubModifySchedule club={club} /> */}
 		</>
 	)
 }

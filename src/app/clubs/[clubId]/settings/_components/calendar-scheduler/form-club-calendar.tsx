@@ -10,12 +10,14 @@ import {
 	useDroppable,
 } from "@dnd-kit/core"
 import { restrictToWindowEdges, snapCenterToCursor } from "@dnd-kit/modifiers"
-import { getEventCoordinates } from "@dnd-kit/utilities"
 import {
 	ChevronLeftIcon,
 	ChevronRightIcon,
 	PlusIcon,
-	PlusCircleIcon,
+	CalendarIcon,
+	ArrowLeftIcon,
+	MinusIcon,
+	AlertTriangleIcon,
 } from "lucide-react"
 import { useAction } from "next-safe-action/hooks"
 import { type Dispatch, type SetStateAction, useEffect, useState } from "react"
@@ -29,6 +31,7 @@ import {
 	FormField,
 	FormItem,
 	FormLabel,
+	FormMessage,
 } from "~/components/ui/form"
 import { Input } from "~/components/ui/input"
 import {
@@ -42,8 +45,16 @@ import {
 } from "~/components/ui/sheet"
 import { useZodForm } from "~/lib/hooks/useZodForm"
 import { cn } from "~/lib/utils"
-import { rescheduleAlbum } from "~/server/api/clubs-actions"
+import {
+	addAlbumToClub,
+	removeAlbumFromClub,
+	rescheduleAlbum,
+} from "~/server/api/clubs-actions"
 import type { GetClubWithAlbums } from "~/server/api/queries"
+import { AnimatePresence, motion, MotionConfig } from "framer-motion"
+import { createAlbum } from "~/server/api/album-actions"
+import type { SelectAlbum } from "~/server/db/schema"
+import { DialogConfirmation } from "~/components/ui/dialog-confirmation"
 
 export default function FormClubCalendar({
 	club,
@@ -55,14 +66,18 @@ export default function FormClubCalendar({
 	const [selectedDate, setSelectedDate] = useState<Date>(today)
 	const [clubAlbums, setClubAlbums] = useState(club.clubAlbums)
 	const [activeDragId, setActiveDragId] = useState<number | null>(null)
-	const [newAlbumSheet, setNewAlbumSheet] = useState<{
-		isOpen: boolean
-		date: string | null
-	}>({
+	const [newAlbumSheet, setNewAlbumSheet] = useState<SheetScheduleAlbumState>({
 		isOpen: false,
 		date: null,
+		variant: "scheduleAlbum",
 	})
-	const { execute } = useAction(rescheduleAlbum, {
+	const [removeAlbumDialog, setRemoveAlbumDialog] = useState<RemoveAlbumDialog>(
+		{
+			isOpen: false,
+			clubAlbum: null,
+		},
+	)
+	const { execute: executeRescheduleAlbum } = useAction(rescheduleAlbum, {
 		onSuccess: () => {
 			toast.success("Album rescheduled")
 		},
@@ -70,6 +85,23 @@ export default function FormClubCalendar({
 			toast.error(error.serverError ?? "Unable to update club")
 		},
 	})
+
+	const { execute: executeRemoveAlbum } = useAction(removeAlbumFromClub, {
+		onSuccess: () => {
+			toast.success("Album removed")
+			setRemoveAlbumDialog({
+				isOpen: false,
+				clubAlbum: null,
+			})
+		},
+		onError({ error }) {
+			toast.error(error.serverError ?? "Unable to update club")
+		},
+	})
+
+	useEffect(() => {
+		setClubAlbums(club.clubAlbums)
+	}, [club.clubAlbums])
 
 	const dateToClubAlbm = getClubAlbumMap(clubAlbums)
 	const days = getGridDays()
@@ -79,7 +111,14 @@ export default function FormClubCalendar({
 	const currentMonthLabel = `${monthNames[currentMonth.getMonth()]} ${currentMonth.getFullYear()}`
 	const isDragging = activeDragId !== null
 
-	console.log(newAlbumSheet)
+	function handleRemoveAlbum() {
+		console.log("handleRemoveAlbum", removeAlbumDialog.clubAlbum)
+		executeRemoveAlbum({
+			// biome-ignore lint/style/noNonNullAssertion: no way they can click the button if the dialog isn't open
+			clubAlbumId: removeAlbumDialog.clubAlbum!.id,
+			clubId: club.id,
+		})
+	}
 
 	return (
 		<DndContext
@@ -107,12 +146,18 @@ export default function FormClubCalendar({
 					</div>
 					<div className="flex items-center">
 						<div className="ml-4 flex items-center">
-							<button
-								type="button"
-								className="ml-6 rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+							<Button
+								className="bg-indigo-600 hover:bg-indigo-500"
+								onClick={() =>
+									setNewAlbumSheet({
+										isOpen: true,
+										date: null,
+										variant: "scheduleAlbum",
+									})
+								}
 							>
 								Add album
-							</button>
+							</Button>
 						</div>
 					</div>
 				</header>
@@ -147,6 +192,7 @@ export default function FormClubCalendar({
 									key={day.date}
 									day={day}
 									setNewAlbumSheet={setNewAlbumSheet}
+									setRemoveAlbumDialog={setRemoveAlbumDialog}
 								/>
 							))}
 						</div>
@@ -198,6 +244,35 @@ export default function FormClubCalendar({
 				club={club}
 				setNewAlbumSheet={setNewAlbumSheet}
 				newAlbumSheet={newAlbumSheet}
+			/>
+			<DialogConfirmation
+				Icon={AlertTriangleIcon}
+				open={removeAlbumDialog.isOpen}
+				onOpenChange={(open: boolean) => {
+					if (!open) {
+						setRemoveAlbumDialog({
+							isOpen: false,
+							clubAlbum: null,
+						})
+					}
+				}}
+				title="Remove album"
+				description={`Are you sure you want to remove ${removeAlbumDialog.clubAlbum?.album.title} by ${removeAlbumDialog.clubAlbum?.album.artist}?`}
+				primaryAction={{
+					text: "Remove",
+					variant: "destructive",
+					onClick: handleRemoveAlbum,
+				}}
+				secondaryAction={{
+					text: "Cancel",
+					variant: "outline",
+					onClick: () => {
+						setRemoveAlbumDialog({
+							isOpen: false,
+							clubAlbum: null,
+						})
+					},
+				}}
 			/>
 		</DndContext>
 	)
@@ -294,7 +369,10 @@ export default function FormClubCalendar({
 			const date = over.id
 			const clubAlbumId = active.id
 
-			execute({ clubAlbumId: Number(clubAlbumId), scheduledFor: String(date) })
+			executeRescheduleAlbum({
+				clubAlbumId: Number(clubAlbumId),
+				scheduledFor: String(date),
+			})
 
 			setClubAlbums((prev) =>
 				prev.map((clubAlbum) => {
@@ -418,18 +496,34 @@ type Day = {
 function DayDesktop({
 	day,
 	setNewAlbumSheet,
+	setRemoveAlbumDialog,
 }: {
 	day: Day
-	setNewAlbumSheet: Dispatch<
-		SetStateAction<{ isOpen: boolean; date: string | null }>
-	>
+	setNewAlbumSheet: Dispatch<SetStateAction<SheetScheduleAlbumState>>
+	setRemoveAlbumDialog: Dispatch<SetStateAction<RemoveAlbumDialog>>
 }) {
 	const { isOver, setNodeRef } = useDroppable({
 		id: day.date,
 	})
 
-	function handleAddAlbum() {
-		setNewAlbumSheet({ isOpen: true, date: day.date })
+	const thisDaysClubAlbums = day.albums[0]
+
+	function handleScheduleAlbum() {
+		setNewAlbumSheet({
+			isOpen: true,
+			date: day.date,
+			variant: "scheduleAlbum",
+		})
+	}
+
+	function handleRemoveAlbum() {
+		if (!thisDaysClubAlbums) {
+			return
+		}
+		setRemoveAlbumDialog({
+			isOpen: true,
+			clubAlbum: thisDaysClubAlbums,
+		})
 	}
 
 	return (
@@ -459,13 +553,23 @@ function DayDesktop({
 					))}
 				</ol>
 			)}
-			<Button
-				size="icon"
-				className="absolute top-2 right-3 h-6 w-6 bg-indigo-600 hidden group-hover:flex"
-				onClick={handleAddAlbum}
-			>
-				<PlusIcon className="h-4 w-4" />
-			</Button>
+			{thisDaysClubAlbums ? (
+				<Button
+					size="icon"
+					className="absolute top-2 right-3 h-6 w-6 bg-red-600 hidden group-hover:flex hover:bg-red-500"
+					onClick={handleRemoveAlbum}
+				>
+					<MinusIcon className="h-4 w-4" />
+				</Button>
+			) : (
+				<Button
+					size="icon"
+					className="absolute top-2 right-3 h-6 w-6 bg-indigo-600 hidden group-hover:flex hover:bg-indigo-500"
+					onClick={handleScheduleAlbum}
+				>
+					<PlusIcon className="h-4 w-4" />
+				</Button>
+			)}
 		</div>
 	)
 }
@@ -565,49 +669,102 @@ function SheetNewAlbum({
 	newAlbumSheet,
 }: {
 	club: NonNullable<GetClubWithAlbums>
-	newAlbumSheet: { isOpen: boolean; date: string | null }
-	setNewAlbumSheet: Dispatch<
-		SetStateAction<{ isOpen: boolean; date: string | null }>
-	>
+	newAlbumSheet: SheetScheduleAlbumState
+	setNewAlbumSheet: Dispatch<SetStateAction<SheetScheduleAlbumState>>
 }) {
 	return (
 		<Sheet open={newAlbumSheet.isOpen} onOpenChange={handleOpenChange}>
-			<SheetContent>
-				<SheetHeader>
-					<SheetTitle>Schedule album</SheetTitle>
-					<SheetDescription>
-						Schedule a new album for the record club.
-					</SheetDescription>
-				</SheetHeader>
-				<div className="py-6">
-					<SheetNewAlbumForm
-						club={club}
-						setNewAlbumSheet={setNewAlbumSheet}
-						newAlbumSheet={newAlbumSheet}
-					/>
-				</div>
-				<SheetFooter>
-					<SheetClose asChild>
-						<Button type="button" variant="secondary">
-							Cancel
-						</Button>
-					</SheetClose>
-					<Button type="submit">Add</Button>
-				</SheetFooter>
-			</SheetContent>
+			<MotionConfig transition={{ duration: 0.5, type: "spring", bounce: 0 }}>
+				<AnimatePresence mode="popLayout" initial={false}>
+					<SheetContent className="overflow-hidden">
+						{newAlbumSheet.variant === "scheduleAlbum" ? (
+							<motion.div
+								key="scheduleAlbum"
+								initial={{ x: -200, opacity: 0, filter: "blur(4px)" }}
+								animate={{ x: 0, opacity: 1, filter: "blur(0px)" }}
+								exit={{ x: -200, opacity: 0, filter: "blur(4px)" }}
+							>
+								<SheetHeader>
+									<SheetTitle>Schedule album</SheetTitle>
+									<SheetDescription>
+										Schedule a new album for the record club.
+									</SheetDescription>
+								</SheetHeader>
+								<div className="py-6 flex-1">
+									<SheetScheduleAlbumForm
+										club={club}
+										setNewAlbumSheet={setNewAlbumSheet}
+										newAlbumSheet={newAlbumSheet}
+									/>
+								</div>
+								<SheetFooter>
+									<SheetClose asChild>
+										<Button type="button" variant="secondary">
+											Cancel
+										</Button>
+									</SheetClose>
+									<Button type="submit" form="schedule-album-form">
+										Add
+									</Button>
+								</SheetFooter>
+							</motion.div>
+						) : (
+							<motion.div
+								key="addAlbum"
+								initial={{ x: 200, opacity: 0, filter: "blur(4px)" }}
+								animate={{ x: 0, opacity: 1, filter: "blur(0px)" }}
+								exit={{ x: 200, opacity: 0, filter: "blur(4px)" }}
+							>
+								<SheetHeader>
+									<SheetTitle>Create new album</SheetTitle>
+									<SheetDescription>
+										Create a new album to add to your club.
+									</SheetDescription>
+								</SheetHeader>
+								<div className="py-6">
+									<SheetAddAlbumForm setNewAlbumSheet={setNewAlbumSheet} />
+								</div>
+								<SheetFooter className="flex flex-row justify-end gap-2">
+									<SheetClose asChild>
+										<Button variant="outline" className="w-[min-content]">
+											Cancel
+										</Button>
+									</SheetClose>
+									<Button
+										className="w-[min-content]"
+										type="submit"
+										form="add-album-form"
+									>
+										Submit
+									</Button>
+								</SheetFooter>
+							</motion.div>
+						)}
+					</SheetContent>
+				</AnimatePresence>
+			</MotionConfig>
 		</Sheet>
 	)
 
 	function handleOpenChange(isOpen: boolean) {
 		if (!isOpen) {
-			setNewAlbumSheet({ isOpen: false, date: null })
+			setNewAlbumSheet({
+				isOpen: false,
+				date: null,
+				variant: "scheduleAlbum",
+			})
 		} else {
-			setNewAlbumSheet({ isOpen: true, date: newAlbumSheet.date })
+			setNewAlbumSheet({
+				isOpen: true,
+				date: newAlbumSheet.date,
+				variant: newAlbumSheet.variant,
+				album: newAlbumSheet.album,
+			})
 		}
 	}
 }
 
-const addAlbumSchema = z.object({
+const scheduleAlbumSchema = z.object({
 	scheduledFor: z.string(),
 	album: z
 		.object({
@@ -618,36 +775,64 @@ const addAlbumSchema = z.object({
 		.passthrough(),
 })
 
-type AddAlbumForm = z.infer<typeof addAlbumSchema>
+type ScheduleAlbumForm = z.infer<typeof scheduleAlbumSchema>
 
-function SheetNewAlbumForm({
+function SheetScheduleAlbumForm({
 	club,
 	setNewAlbumSheet,
 	newAlbumSheet,
 }: {
 	club: NonNullable<GetClubWithAlbums>
-	newAlbumSheet: { isOpen: boolean; date: string | null }
-	setNewAlbumSheet: Dispatch<
-		SetStateAction<{ isOpen: boolean; date: string | null }>
-	>
+	newAlbumSheet: SheetScheduleAlbumState
+	setNewAlbumSheet: Dispatch<SetStateAction<SheetScheduleAlbumState>>
 }) {
 	const form = useZodForm({
-		schema: addAlbumSchema,
+		schema: scheduleAlbumSchema,
 		defaultValues: {
 			scheduledFor: newAlbumSheet.date ?? "",
+			// biome-ignore lint/style/noNonNullAssertion: just some weird behavior to me with the onsubmit if this is not set
+			album: newAlbumSheet.album!,
 		},
 	})
 
-	function onSubmit(data: AddAlbumForm) {
-		console.log(data)
+	const { execute } = useAction(addAlbumToClub, {
+		onSuccess({ data }) {
+			toast.success(
+				`${data?.clubAlbum.album.artist} - ${data?.clubAlbum.album.title} added`,
+			)
+			setNewAlbumSheet({
+				isOpen: false,
+				variant: "scheduleAlbum",
+				date: null,
+			})
+		},
+		onError({ error }) {
+			if (typeof error.serverError === "string") {
+				toast.error(error.serverError)
+			} else {
+				toast.error("Unable to add album to club")
+			}
+		},
+	})
+
+	function onSubmit(data: ScheduleAlbumForm) {
+		if (!form.getValues("album") && !newAlbumSheet.album) {
+			toast.error("Please select an album")
+			return
+		}
+		execute({
+			clubId: club.id,
+			albumId: newAlbumSheet.album?.id ?? data.album.id,
+			scheduledFor: data.scheduledFor,
+		})
 	}
 
 	return (
 		<Form {...form}>
 			<form
 				onSubmit={form.handleSubmit(onSubmit)}
-				className="flex flex-col gap-4"
-				id="create-album-form"
+				className="flex flex-col gap-8"
+				id="schedule-album-form"
 			>
 				<FormField
 					name="scheduledFor"
@@ -671,6 +856,7 @@ function SheetNewAlbumForm({
 								<TypeaheadAlbums
 									selected={field.value}
 									setSelected={field.onChange}
+									onEmptyClick={handleEmptyClick}
 								/>
 							</FormControl>
 						</FormItem>
@@ -679,6 +865,136 @@ function SheetNewAlbumForm({
 			</form>
 		</Form>
 	)
+
+	function handleEmptyClick() {
+		setNewAlbumSheet((prev) => ({
+			...prev,
+			variant: "addAlbum",
+		}))
+	}
+}
+
+const addAlbumSchema = z.object({
+	title: z.string(),
+	artist: z.string(),
+	releaseDate: z.string(),
+})
+
+type AddAlbumForm = z.infer<typeof addAlbumSchema>
+
+function SheetAddAlbumForm({
+	setNewAlbumSheet,
+}: {
+	setNewAlbumSheet: Dispatch<SetStateAction<SheetScheduleAlbumState>>
+}) {
+	const form = useZodForm({
+		schema: addAlbumSchema,
+		defaultValues: {
+			title: "",
+			artist: "",
+			releaseDate: "",
+		},
+	})
+
+	const { execute } = useAction(createAlbum, {
+		onSuccess: ({ data }) => {
+			if (!data) return
+			toast.success(`${data.album.title} added`)
+			setNewAlbumSheet((prev) => ({
+				...prev,
+				variant: "scheduleAlbum",
+				album: data.album,
+			}))
+		},
+		onError: ({ error }) => {
+			if (typeof error.serverError === "string") {
+				toast.error(error.serverError)
+			} else {
+				toast.error("Error adding album")
+			}
+		},
+	})
+
+	return (
+		<Form {...form}>
+			<Button
+				variant="link"
+				className="pl-0 -mt-2 mb-4"
+				type="button"
+				onClick={() =>
+					setNewAlbumSheet((prev) => ({
+						...prev,
+						variant: "scheduleAlbum",
+					}))
+				}
+			>
+				<ArrowLeftIcon className="h-4 w-4 mr-2" />
+				Back to schedule album
+			</Button>
+			<form
+				onSubmit={form.handleSubmit(onSubmit)}
+				className="flex flex-col gap-8"
+				id="add-album-form"
+			>
+				<FormField
+					name="title"
+					control={form.control}
+					render={({ field }) => (
+						<FormItem>
+							<FormLabel>Title</FormLabel>
+							<FormControl>
+								<Input {...field} />
+							</FormControl>
+							<FormMessage />
+						</FormItem>
+					)}
+				/>
+				<FormField
+					name="artist"
+					control={form.control}
+					render={({ field }) => (
+						<FormItem>
+							<FormLabel>Artist</FormLabel>
+							<FormControl>
+								<Input {...field} />
+							</FormControl>
+							<FormMessage />
+						</FormItem>
+					)}
+				/>
+				<FormField
+					name="releaseDate"
+					control={form.control}
+					render={({ field }) => (
+						<FormItem>
+							<FormLabel>Release date</FormLabel>
+							<FormControl>
+								<div className="relative">
+									<Input
+										type="date"
+										{...field}
+										className="[&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:right-0 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:p-3 [&::-webkit-calendar-picker-indicator]:opacity-0"
+									/>
+									<span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+										<CalendarIcon className="h-5 w-5 text-foreground" />
+									</span>
+								</div>
+							</FormControl>
+							<FormMessage />
+						</FormItem>
+					)}
+				/>
+			</form>
+		</Form>
+	)
+
+	function onSubmit(data: AddAlbumForm) {
+		execute({
+			title: data.title,
+			artist: data.artist,
+			releaseDate: data.releaseDate,
+		})
+	}
 }
 
 export const monthNames = [
@@ -695,3 +1011,20 @@ export const monthNames = [
 	"November",
 	"December",
 ]
+
+type SheetScheduleAlbumState = {
+	album?: Pick<SelectAlbum, "id" | "title" | "artist">
+	date: string | null
+	variant: "scheduleAlbum" | "addAlbum"
+	isOpen: boolean
+}
+
+type RemoveAlbumDialog =
+	| {
+			isOpen: true
+			clubAlbum: ClubAlbum
+	  }
+	| {
+			isOpen: false
+			clubAlbum: undefined | null
+	  }

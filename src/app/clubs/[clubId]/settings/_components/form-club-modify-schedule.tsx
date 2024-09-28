@@ -8,7 +8,7 @@ import { toast } from "sonner"
 import { TypeaheadAlbums } from "~/components/typeahead-albums"
 import { Button } from "~/components/ui/button"
 import { Calendar } from "~/components/ui/calendar"
-import { addAlbumToClub, deleteClubAlbum } from "~/server/api/clubs-actions"
+import { addAlbumToClub, removeAlbumFromClub } from "~/server/api/clubs-actions"
 import type { GetClubWithAlbums } from "~/server/api/queries"
 import type { SelectAlbum } from "~/server/db/schema"
 
@@ -24,7 +24,7 @@ export function FormClubModifySchedule({
 		execute: deleteAlbum,
 		input: deleteInput,
 		isExecuting: isDeleting,
-	} = useAction(deleteClubAlbum, {
+	} = useAction(removeAlbumFromClub, {
 		onSuccess() {
 			toast.success("Album deleted")
 		},
