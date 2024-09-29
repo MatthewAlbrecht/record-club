@@ -94,7 +94,7 @@ function SheetBodyEditClubAlbum({
 
 	const { execute } = useAction(rescheduleAlbum, {
 		onSuccess() {
-			toast.success(`${editAlbumState.clubAlbum?.album.title}  rescheduled`)
+			toast.success(`${editAlbumState.clubAlbum?.album.name} rescheduled`)
 			setEditAlbumState({ isOpen: false, clubAlbum: null })
 		},
 		onError({ error }) {

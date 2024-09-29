@@ -85,7 +85,7 @@ async function ClubPageIsMember({
 									aria-label="Club Settings"
 									className="px-2 text-slate-50"
 								>
-									<Link href={Routes.ClubSettings(club.id, "general")}>
+									<Link href={Routes.ClubSettings(club.id, "schedule")}>
 										<Settings className="h-6 w-6" />
 									</Link>
 								</Button>

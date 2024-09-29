@@ -22,8 +22,8 @@ const scheduleAlbumSchema = z.object({
 	album: z
 		.object({
 			id: z.number(),
-			artist: z.string(),
-			title: z.string(),
+			name: z.string(),
+			artistNames: z.string(),
 		})
 		.passthrough(),
 })
@@ -51,7 +51,7 @@ export function SheetBodyScheduleAlbumForm({
 	const { execute } = useAction(addAlbumToClub, {
 		onSuccess({ data }) {
 			toast.success(
-				`${data?.clubAlbum.album.artist} - ${data?.clubAlbum.album.title} added`,
+				`${data?.clubAlbum.album.artistNames} - ${data?.clubAlbum.album.name} added`,
 			)
 			setNewAlbumSheet({
 				isOpen: false,

@@ -21,9 +21,10 @@ import {
 import { useDebouncedState } from "~/lib/hooks/useDebouncedState"
 import { useZodForm } from "~/lib/hooks/useZodForm"
 import { cn } from "~/lib/utils"
-import { createAlbum, getAlbumBySpotifyURI } from "~/server/api/album-actions"
+import { createAlbum, getAlbumBySpotifyId } from "~/server/api/album-actions"
 import type { SelectAlbum } from "~/server/db/schema"
 
+import { AnimatePresence, motion } from "framer-motion"
 import {
 	Form,
 	FormControl,
@@ -43,14 +44,13 @@ import {
 	SheetTitle,
 	SheetTrigger,
 } from "./ui/sheet"
-import { AnimatePresence, motion } from "framer-motion"
 
 export function TypeaheadAlbums({
 	selected,
 	setSelected,
 	onEmptyClick,
 }: {
-	selected?: Pick<SelectAlbum, "id" | "title" | "artist">
+	selected?: Pick<SelectAlbum, "id" | "name" | "artistNames">
 	setSelected: (album: SelectAlbum) => void
 	onEmptyClick?: () => void
 }) {
@@ -60,7 +60,7 @@ export function TypeaheadAlbums({
 
 	const { data } = useAlbumsQuery({ search })
 
-	const { execute, isPending } = useAction(getAlbumBySpotifyURI, {
+	const { execute, isPending } = useAction(getAlbumBySpotifyId, {
 		onSuccess: ({ data }) => {
 			if (!data) return
 			console.log("Album ->", data)
@@ -77,14 +77,14 @@ export function TypeaheadAlbums({
 	})
 
 	function handleInputChange(value: string) {
-		if (SpotifyAlbumURIRegex.test(value)) {
-			console.log("Spotify URI ->", value)
+		if (SpotifyAlbumIdRegex.test(value)) {
+			console.log("Spotify Id ->", value)
 			const match = value.match(/album\/([^?]+)/)
 			if (match?.[1]) {
 				const albumId = match[1]
 				console.log("Album ID ->", albumId)
 				setValue(albumId)
-				execute({ spotifyURI: albumId })
+				execute({ spotifyId: albumId })
 				return
 			}
 		}
@@ -93,8 +93,8 @@ export function TypeaheadAlbums({
 	}
 
 	function handleAlbumAdd(album: SelectAlbum) {
-		setSearch(album.title)
-		setValue(album.title)
+		setSearch(album.name)
+		setValue(album.name)
 		setSelected(album)
 	}
 
@@ -107,7 +107,7 @@ export function TypeaheadAlbums({
 					aria-expanded={open}
 					className="w-full justify-between"
 				>
-					{selected ? selected.title : "Search or Spotify link..."}
+					{selected ? selected.name : "Search or Spotify link..."}
 					<Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
 				</Button>
 			</PopoverTrigger>
@@ -141,20 +141,20 @@ export function TypeaheadAlbums({
 										value={album.id.toString()}
 										onSelect={(currentValue) => {
 											setSelected(album)
-											setValue(currentValue === value ? "" : album.title)
+											setValue(currentValue === value ? "" : album.name)
 											setOpen(false)
 										}}
 									>
 										<Check
 											className={cn(
 												"mr-2 h-4 w-4",
-												value === album.title ? "opacity-100" : "opacity-0",
+												value === album.name ? "opacity-100" : "opacity-0",
 											)}
 										/>
 										<div className="flex flex-col">
-											<span className="font-semibold">{album.artist}</span>
+											<span className="font-semibold">{album.artistNames}</span>
 											<span className="text-muted-foreground">
-												{album.title}
+												{album.name}
 											</span>
 										</div>
 									</CommandItem>
@@ -198,9 +198,9 @@ export function TypeaheadAlbums({
 }
 
 const createAlbumSchema = z.object({
-	title: z.string().min(1),
-	artist: z.string().min(1),
-	releaseDate: z.string().optional(),
+	name: z.string().min(1),
+	artistNames: z.string().min(1),
+	releaseDate: z.string(),
 })
 
 type CreateAlbumForm = z.infer<typeof createAlbumSchema>
@@ -215,15 +215,15 @@ function EmptyCommandList({
 	const form = useZodForm<CreateAlbumForm>({
 		schema: createAlbumSchema,
 		defaultValues: {
-			title: "",
-			artist: "",
+			name: "",
+			artistNames: "",
 		},
 	})
 
 	const { execute } = useAction(createAlbum, {
 		onSuccess: ({ data }) => {
 			if (!data) return
-			toast.success(`${data.album.title} added`)
+			toast.success(`${data.album.name} added`)
 			setOpen(false)
 			onAlbumAdd?.(data.album)
 		},
@@ -238,8 +238,8 @@ function EmptyCommandList({
 
 	function onSubmit(data: CreateAlbumForm) {
 		execute({
-			title: data.title,
-			artist: data.artist,
+			name: data.name,
+			artistNames: data.artistNames,
 			releaseDate: data.releaseDate,
 		})
 	}
@@ -268,7 +268,7 @@ function EmptyCommandList({
 								id="create-album-form"
 							>
 								<FormField
-									name="title"
+									name="name"
 									control={form.control}
 									render={({ field }) => (
 										<FormItem>
@@ -281,7 +281,7 @@ function EmptyCommandList({
 									)}
 								/>
 								<FormField
-									name="artist"
+									name="artistNames"
 									control={form.control}
 									render={({ field }) => (
 										<FormItem>
@@ -358,7 +358,7 @@ function useAlbumsQuery(
 	})
 }
 
-const SpotifyAlbumURIRegex =
+const SpotifyAlbumIdRegex =
 	/^(https?:\/\/)?(open\.spotify\.com\/album\/|spotify:album:)/
 
-const SpotifyGeneralURIRegex = /^(https?:\/\/)?open\.spotify\.com\/|spotify:/
+const SpotifyGeneralIdRegex = /^(https?:\/\/)?open\.spotify\.com\/|spotify:/

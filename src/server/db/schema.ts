@@ -118,25 +118,19 @@ export const albums = createTable(
 	"album",
 	{
 		id: serial("id").primaryKey(),
-		title: varchar("title", { length: 256 }).notNull(),
-		artist: varchar("artist", { length: 256 }).notNull(),
-		releaseYear: integer("release_year"),
-		releaseMonth: integer("release_month"),
-		releaseDay: integer("release_day"),
-		releaseDate: date("release_date").notNull().default(sql`CURRENT_DATE`),
+		name: varchar("name", { length: 256 }).notNull(),
+		artistNames: varchar("artist_names", { length: 256 }).notNull(),
+		releaseDate: varchar("release_date", { length: 16 }).notNull(),
 		releaseDatePrecision: releaseDatePrecisionEnum("release_date_precision")
 			.notNull()
-			.default("year"),
+			.default("day"),
 		albumType: albumTypeEnum("album_type").notNull().default("album"),
-		totalTracks: integer("total_tracks").notNull().default(0),
+		totalTracks: integer("total_tracks"),
 		spotifyId: varchar("spotify_id", { length: 256 }),
-		spotifyImageUrl: varchar("spotify_image_url", { length: 256 })
-			.notNull()
-			.default(""),
+		spotifyImageUrl: varchar("spotify_image_url", { length: 256 }),
 		spotifyImageWidth: integer("spotify_image_width"),
 		spotifyImageHeight: integer("spotify_image_height"),
 		genres: text("genres").notNull().default("[]").$type<string[]>(),
-		name: varchar("name", { length: 256 }).notNull().default(""),
 		isrc: varchar("isrc", { length: 16 }),
 		ean: varchar("ean", { length: 16 }),
 		upc: varchar("upc", { length: 16 }),
@@ -155,10 +149,6 @@ export const albums = createTable(
 	},
 	(album) => ({
 		uniqueSpotifyId: uniqueIndex("unique_spotify_id").on(album.spotifyId),
-		uniqueTitleArtist: uniqueIndex("unique_title_artist").on(
-			album.title,
-			album.artist,
-		),
 	}),
 )
 
@@ -464,6 +454,14 @@ export const userClubAlbumProgressRelations = relations(
 		}),
 	}),
 )
+
+export const albumsRelations = relations(albums, ({ many }) => ({
+	artists: many(albumArtists),
+}))
+
+export const artistsRelations = relations(artists, ({ many }) => ({
+	albums: many(albumArtists),
+}))
 
 /**
  * ----------------------------------------------------------------------------

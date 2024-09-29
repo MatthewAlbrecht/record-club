@@ -113,7 +113,7 @@ function AlbumListItem({ clubAlbum }: { clubAlbum: ClubAlbum }) {
 		>
 			<div className="group flex">
 				<p className="flex-auto truncate font-medium text-gray-900 group-hover:text-indigo-600">
-					{clubAlbum.album.title} by {clubAlbum.album.artist}
+					{clubAlbum.album.name} by {clubAlbum.album.artistNames}
 				</p>
 			</div>
 		</li>

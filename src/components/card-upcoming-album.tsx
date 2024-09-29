@@ -14,7 +14,7 @@ export function CardUpcomingAlbum({
 	clubAlbum: Pick<SelectClubAlbum, "id" | "scheduledFor"> & {
 		userProgress: Pick<SelectUserClubAlbumProgress, "hasListened">[]
 		club: Pick<SelectClub, "id">
-		album: Pick<SelectAlbum, "id" | "artist" | "title">
+		album: Pick<SelectAlbum, "id" | "artistNames" | "name">
 	}
 }) {
 	const relativeDate = getRelativeDateLabel(clubAlbum.scheduledFor)
@@ -33,10 +33,10 @@ export function CardUpcomingAlbum({
 				<div className="flex h-full flex-grow flex-col justify-between overflow-hidden py-2">
 					<div className="min-w-0">
 						<h3 className="overflow-hidden text-ellipsis whitespace-nowrap text-lg font-medium text-slate-700">
-							{clubAlbum.album.artist}
+							{clubAlbum.album.artistNames}
 						</h3>
 						<p className="overflow-hidden text-ellipsis whitespace-nowrap text-sm text-slate-500">
-							{clubAlbum.album.title}
+							{clubAlbum.album.name}
 						</p>
 					</div>
 					<div className="flex items-center justify-between gap-2">

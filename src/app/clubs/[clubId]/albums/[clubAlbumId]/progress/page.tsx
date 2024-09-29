@@ -63,8 +63,8 @@ export default async function ProgressPage({
 			<div className="flex items-center space-x-4">
 				<div className="h-32 w-32 rounded-sm bg-slate-200" />
 				<div>
-					<h1 className="text-2xl font-bold">{clubAlbum.album.artist}</h1>
-					<p className="text-muted-foreground">{clubAlbum.album.title}</p>
+					<h1 className="text-2xl font-bold">{clubAlbum.album.artistNames}</h1>
+					<p className="text-muted-foreground">{clubAlbum.album.name}</p>
 				</div>
 			</div>
 			<FormQuestionnaire

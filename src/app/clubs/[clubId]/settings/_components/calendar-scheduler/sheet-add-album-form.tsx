@@ -18,8 +18,8 @@ import { createAlbum } from "~/server/api/album-actions"
 import type { SheetScheduleAlbumState } from "./utils"
 
 const addAlbumSchema = z.object({
-	title: z.string(),
-	artist: z.string(),
+	name: z.string(),
+	artistNames: z.string(),
 	releaseDate: z.string(),
 })
 
@@ -33,8 +33,8 @@ export function SheetBodyAddAlbumForm({
 	const form = useZodForm({
 		schema: addAlbumSchema,
 		defaultValues: {
-			title: "",
-			artist: "",
+			name: "",
+			artistNames: "",
 			releaseDate: "",
 		},
 	})
@@ -42,7 +42,7 @@ export function SheetBodyAddAlbumForm({
 	const { execute } = useAction(createAlbum, {
 		onSuccess: ({ data }) => {
 			if (!data) return
-			toast.success(`${data.album.title} added`)
+			toast.success(`${data.album.name} added`)
 			setNewAlbumSheet((prev) => ({
 				...prev,
 				variant: "scheduleAlbum",
@@ -80,7 +80,7 @@ export function SheetBodyAddAlbumForm({
 				id="add-album-form"
 			>
 				<FormField
-					name="title"
+					name="name"
 					control={form.control}
 					render={({ field }) => (
 						<FormItem>
@@ -93,7 +93,7 @@ export function SheetBodyAddAlbumForm({
 					)}
 				/>
 				<FormField
-					name="artist"
+					name="artistNames"
 					control={form.control}
 					render={({ field }) => (
 						<FormItem>
@@ -133,8 +133,8 @@ export function SheetBodyAddAlbumForm({
 
 	function onSubmit(data: AddAlbumForm) {
 		execute({
-			title: data.title,
-			artist: data.artist,
+			name: data.name,
+			artistNames: data.artistNames,
 			releaseDate: data.releaseDate,
 		})
 	}

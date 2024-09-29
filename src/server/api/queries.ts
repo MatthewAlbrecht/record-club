@@ -64,8 +64,8 @@ export async function getClubWithAlbums(clubId: number) {
 					album: {
 						columns: {
 							id: true,
-							title: true,
-							artist: true,
+							name: true,
+							artistNames: true,
 						},
 					},
 				},

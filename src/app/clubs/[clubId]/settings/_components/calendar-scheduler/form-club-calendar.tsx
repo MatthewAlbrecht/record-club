@@ -221,7 +221,7 @@ export default function FormClubCalendar({
 					}
 				}}
 				title="Remove album"
-				description={`Are you sure you want to remove ${removeAlbumDialog.clubAlbum?.album.title} by ${removeAlbumDialog.clubAlbum?.album.artist}?`}
+				description={`Are you sure you want to remove ${removeAlbumDialog.clubAlbum?.album.name} by ${removeAlbumDialog.clubAlbum?.album.artistNames}?`}
 				primaryAction={{
 					text: "Remove",
 					variant: "destructive",
@@ -372,9 +372,9 @@ function DraggedOverlay({ clubAlbum }: { clubAlbum: ClubAlbum }) {
 		<div className="bg-white flex items-center cursor-grabbing p-2 pr-6 rounded-md shadow-2xl w-fit">
 			<div className="bg-gray-100 rounded-md size-12 shrink-0" />
 			<div className="flex flex-col ml-2">
-				<p className="font-semibold text-nowrap">{clubAlbum.album.title}</p>
+				<p className="font-semibold text-nowrap">{clubAlbum.album.name}</p>
 				<p className="text-gray-500 text-sm text-nowrap">
-					{clubAlbum.album.artist}
+					{clubAlbum.album.artistNames}
 				</p>
 			</div>
 		</div>

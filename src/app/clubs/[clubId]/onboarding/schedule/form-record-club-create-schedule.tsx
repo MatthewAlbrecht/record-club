@@ -31,8 +31,8 @@ const schema = z.object({
 	album: z
 		.object({
 			id: z.number(),
-			artist: z.string(),
-			title: z.string(),
+			artistNames: z.string(),
+			name: z.string(),
 		})
 		.passthrough(),
 })
@@ -55,7 +55,7 @@ export function FormRecordClubCreateSchedule({
 	const { execute } = useAction(addAlbumToClub, {
 		onSuccess({ data }) {
 			toast.success(
-				`${data?.clubAlbum.album.artist} - ${data?.clubAlbum.album.title} added`,
+				`${data?.clubAlbum.album.artistNames} - ${data?.clubAlbum.album.name} added`,
 			)
 			router.push(`/clubs/${club.id}/onboarding/questions`)
 		},

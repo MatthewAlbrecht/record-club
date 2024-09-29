@@ -6,5 +6,5 @@ export default async function ClubSettingsPage({
 }: {
 	params: { clubId: string }
 }) {
-	return redirect(Routes.ClubSettings(params.clubId, "general"))
+	return redirect(Routes.ClubSettings(params.clubId, "schedule"))
 }

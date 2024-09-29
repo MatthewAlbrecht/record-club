@@ -1,17 +1,17 @@
 "use server"
 
+import { sql } from "drizzle-orm"
 import { z } from "zod"
 import { authActionClient, authAndSpotifyActionClient } from "~/lib/safe-action"
 import { db } from "../db"
 import { type InsertAlbum, albumArtists, albums, artists } from "../db/schema"
 import type { SimplifiedArtist, SpotifyAlbum } from "../spotify"
 import { DatabaseError, PGErrorCodes } from "./utils"
-import { sql } from "drizzle-orm"
 
 const createAlbumSchema = z.object({
-	title: z.string().min(1),
-	artist: z.string().min(1),
-	releaseDate: z.string().optional(),
+	name: z.string().min(1),
+	artistNames: z.string().min(1),
+	releaseDate: z.string(),
 })
 
 export const createAlbum = authActionClient
@@ -19,7 +19,7 @@ export const createAlbum = authActionClient
 	.schema(createAlbumSchema)
 	.action(
 		async ({
-			parsedInput: { title, artist, releaseDate },
+			parsedInput: { name, artistNames, releaseDate },
 			ctx: { userId },
 		}) => {
 			const releaseYear = releaseDate
@@ -34,11 +34,9 @@ export const createAlbum = authActionClient
 				const [album] = await db
 					.insert(albums)
 					.values({
-						title,
-						artist,
-						releaseYear,
-						releaseMonth,
-						releaseDay,
+						name,
+						artistNames,
+						releaseDate,
 					})
 					.returning()
 
@@ -61,20 +59,20 @@ export const createAlbum = authActionClient
 		},
 	)
 
-const getAlbumBySpotifyURISchema = z.object({
-	spotifyURI: z.string().min(1),
+const getAlbumBySpotifyIdSchema = z.object({
+	spotifyId: z.string().min(1),
 })
 
-export const getAlbumBySpotifyURI = authAndSpotifyActionClient
-	.metadata({ actionName: "getAlbumBySpotifyURI" })
-	.schema(getAlbumBySpotifyURISchema)
+export const getAlbumBySpotifyId = authAndSpotifyActionClient
+	.metadata({ actionName: "getAlbumBySpotifyId" })
+	.schema(getAlbumBySpotifyIdSchema)
 	.action(
 		async ({
 			ctx: { userId, spotifyAccessToken },
-			parsedInput: { spotifyURI },
+			parsedInput: { spotifyId },
 		}) => {
 			const response = await fetch(
-				`https://api.spotify.com/v1/albums/${spotifyURI}`,
+				`https://api.spotify.com/v1/albums/${spotifyId}`,
 				{
 					headers: {
 						Authorization: `Bearer ${spotifyAccessToken}`,
@@ -97,10 +95,8 @@ export const getAlbumBySpotifyURI = authAndSpotifyActionClient
 
 			try {
 				const albumToInsert = {
-					title: album.name,
 					name: album.name,
-					// biome-ignore lint/style/noNonNullAssertion: at least one artist is returned
-					artist: album.artists[0]!.name,
+					artistNames: album.artists.map((artist) => artist.name).join(", "),
 					releaseDate: album.release_date,
 					releaseDatePrecision: album.release_date_precision,
 					albumType: album.album_type,
@@ -127,7 +123,7 @@ export const getAlbumBySpotifyURI = authAndSpotifyActionClient
 						.insert(albums)
 						.values(albumToInsert)
 						.onConflictDoUpdate({
-							target: albums.spotifyId,
+							target: [albums.spotifyId],
 							set: albumToInsert,
 						})
 						.returning()

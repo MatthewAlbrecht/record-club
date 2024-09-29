@@ -9,4 +9,5 @@ export default {
 		url: env.POSTGRES_URL,
 	},
 	tablesFilter: ["record-club_*"],
+	strict: true,
 } satisfies Config

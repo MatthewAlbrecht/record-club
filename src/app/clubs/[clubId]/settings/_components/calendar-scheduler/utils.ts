@@ -19,7 +19,7 @@ export const monthNames = [
 ]
 
 export type SheetScheduleAlbumState = {
-	album?: Pick<SelectAlbum, "id" | "title" | "artist">
+	album?: Pick<SelectAlbum, "id" | "name" | "artistNames">
 	date: string | null
 	variant: "scheduleAlbum" | "addAlbum"
 	isOpen: boolean

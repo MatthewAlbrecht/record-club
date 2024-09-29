@@ -88,9 +88,9 @@ export function CalendarDaySelected({
 					>
 						<div className="flex-none h-12 w-12 rounded-sm bg-gray-100" />
 						<div className="flex-auto">
-							<p className="font-semibold text-nowrap">{album.album.title}</p>
+							<p className="font-semibold text-nowrap">{album.album.name}</p>
 							<p className="text-gray-500 text-sm text-nowrap">
-								{album.album.artist}
+								{album.album.artistNames}
 							</p>
 						</div>
 						<DropdownMenu>
