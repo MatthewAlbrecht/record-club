@@ -1,8 +1,8 @@
 import { auth } from "@clerk/nextjs/server"
+import Image from "next/image"
 import { notFound } from "next/navigation"
 import { db } from "~/server/db"
 import { FormQuestionnaire } from "./_components/form-questionnaire"
-
 interface ProgressPageProps {
 	params: {
 		clubId: string
@@ -58,10 +58,22 @@ export default async function ProgressPage({
 			and(eq(answers.clubAlbumId, clubAlbum.id), eq(answers.userId, userId)),
 	})
 
+	const album = clubAlbum.album
+
 	return (
 		<div className="container mx-auto p-4">
 			<div className="flex items-center space-x-4">
-				<div className="h-32 w-32 rounded-sm bg-slate-200" />
+				{album.spotifyImageUrl ? (
+					<Image
+						src={album.spotifyImageUrl}
+						alt={album.name}
+						width={32 * 4}
+						height={32 * 4}
+						className="rounded-sm"
+					/>
+				) : (
+					<div className="h-32 w-32 rounded-sm bg-slate-200" />
+				)}
 				<div>
 					<h1 className="text-2xl font-bold">{clubAlbum.album.artistNames}</h1>
 					<p className="text-muted-foreground">{clubAlbum.album.name}</p>

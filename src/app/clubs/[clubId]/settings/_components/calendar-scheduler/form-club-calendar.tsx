@@ -14,6 +14,7 @@ import {
 	ChevronRightIcon,
 } from "lucide-react"
 import { useAction } from "next-safe-action/hooks"
+import Image from "next/image"
 import { useEffect, useState } from "react"
 import { toast } from "sonner"
 import { Button } from "~/components/ui/button"
@@ -25,6 +26,9 @@ import {
 } from "~/server/api/clubs-actions"
 import type { GetClubWithAlbums } from "~/server/api/queries"
 import { CalendarDayDesktop } from "./calendar-day-desktop"
+import { CalendarDayMobile, CalendarDaySelected } from "./calendar-day-mobile"
+import { SheetEditClubAlbum } from "./sheet-edit-club-album"
+import { SheetScheduleAlbum } from "./sheet-schedule-album"
 import {
 	type ClubAlbum,
 	type Day,
@@ -33,10 +37,6 @@ import {
 	type SheetScheduleAlbumState,
 	monthNames,
 } from "./utils"
-
-import { CalendarDayMobile, CalendarDaySelected } from "./calendar-day-mobile"
-import { SheetEditClubAlbum } from "./sheet-edit-club-album"
-import { SheetScheduleAlbum } from "./sheet-schedule-album"
 
 export default function FormClubCalendar({
 	club,
@@ -342,6 +342,12 @@ export default function FormClubCalendar({
 			const date = over.id
 			const clubAlbumId = active.id
 
+			const clubAlbum = clubAlbums.find((album) => album.id === clubAlbumId)
+
+			if (!clubAlbum || clubAlbum.scheduledFor === date) {
+				return
+			}
+
 			executeRescheduleAlbum({
 				clubAlbumId: Number(clubAlbumId),
 				scheduledFor: String(date),
@@ -370,7 +376,17 @@ export default function FormClubCalendar({
 function DraggedOverlay({ clubAlbum }: { clubAlbum: ClubAlbum }) {
 	return (
 		<div className="bg-white flex items-center cursor-grabbing p-2 pr-6 rounded-md shadow-2xl w-fit">
-			<div className="bg-gray-100 rounded-md size-12 shrink-0" />
+			<div className="flex items-center justify-center size-12 bg-slate-200">
+				{clubAlbum.album.spotifyImageUrl && (
+					<Image
+						src={clubAlbum.album.spotifyImageUrl}
+						alt={clubAlbum.album.name}
+						width={12 * 4}
+						height={12 * 4}
+						className="rounded-sm"
+					/>
+				)}
+			</div>
 			<div className="flex flex-col ml-2">
 				<p className="font-semibold text-nowrap">{clubAlbum.album.name}</p>
 				<p className="text-gray-500 text-sm text-nowrap">

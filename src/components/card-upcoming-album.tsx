@@ -1,5 +1,6 @@
 import { differenceInDays, format, parseISO } from "date-fns"
 import { ArrowRight } from "lucide-react"
+import Image from "next/image"
 import Link from "next/link"
 import type {
 	SelectAlbum,
@@ -7,18 +8,17 @@ import type {
 	SelectClubAlbum,
 	SelectUserClubAlbumProgress,
 } from "~/server/db/schema"
-
 export function CardUpcomingAlbum({
 	clubAlbum,
 }: {
 	clubAlbum: Pick<SelectClubAlbum, "id" | "scheduledFor"> & {
 		userProgress: Pick<SelectUserClubAlbumProgress, "hasListened">[]
 		club: Pick<SelectClub, "id">
-		album: Pick<SelectAlbum, "id" | "artistNames" | "name">
+		album: Pick<SelectAlbum, "id" | "artistNames" | "name" | "spotifyImageUrl">
 	}
 }) {
 	const relativeDate = getRelativeDateLabel(clubAlbum.scheduledFor)
-
+	const album = clubAlbum.album
 	return (
 		<li key={clubAlbum.id}>
 			<Link
@@ -29,7 +29,17 @@ export function CardUpcomingAlbum({
 				}
 				className="-mx-2 flex h-full flex-row items-center gap-2 rounded-md bg-slate-50 p-2 hover:bg-slate-100"
 			>
-				<div className="h-24 w-24 flex-shrink-0 rounded-sm bg-gradient-to-bl from-slate-100 to-slate-200" />
+				{album.spotifyImageUrl ? (
+					<Image
+						src={album.spotifyImageUrl}
+						alt={album.name}
+						width={96}
+						height={96}
+						className="rounded-sm"
+					/>
+				) : (
+					<div className="h-24 w-24 flex-shrink-0 rounded-sm bg-gradient-to-bl from-slate-100 to-slate-200" />
+				)}
 				<div className="flex h-full flex-grow flex-col justify-between overflow-hidden py-2">
 					<div className="min-w-0">
 						<h3 className="overflow-hidden text-ellipsis whitespace-nowrap text-lg font-medium text-slate-700">

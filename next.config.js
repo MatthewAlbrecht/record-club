@@ -11,6 +11,7 @@ const config = {
 		remotePatterns: [
 			{ hostname: "nxfo5supr1itbgfl.public.blob.vercel-storage.com" },
 			{ hostname: "utfs.io" },
+			{ hostname: "i.scdn.co" },
 		],
 	},
 }

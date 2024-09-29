@@ -1,4 +1,5 @@
 import { MoreHorizontal } from "lucide-react"
+import Image from "next/image"
 import type { Dispatch, SetStateAction } from "react"
 import { Button } from "~/components/ui/button"
 import {
@@ -86,7 +87,17 @@ export function CalendarDaySelected({
 						key={album.id}
 						className="group flex p-2 focus-within:bg-gray-50 hover:bg-gray-50 gap-x-2 items-center"
 					>
-						<div className="flex-none h-12 w-12 rounded-sm bg-gray-100" />
+						<div className="flex-none h-12 w-12 rounded-sm bg-gray-100">
+							{album.album.spotifyImageUrl && (
+								<Image
+									src={album.album.spotifyImageUrl}
+									alt={album.album.name}
+									width={12 * 4}
+									height={12 * 4}
+									className="rounded-sm"
+								/>
+							)}
+						</div>
 						<div className="flex-auto">
 							<p className="font-semibold text-nowrap">{album.album.name}</p>
 							<p className="text-gray-500 text-sm text-nowrap">

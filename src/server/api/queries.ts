@@ -66,6 +66,7 @@ export async function getClubWithAlbums(clubId: number) {
 							id: true,
 							name: true,
 							artistNames: true,
+							spotifyImageUrl: true,
 						},
 					},
 				},
