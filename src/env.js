@@ -24,6 +24,8 @@ export const env = createEnv({
 		UPSTASH_REDIS_REST_TOKEN: z.string(),
 		UPLOADTHING_SECRET: z.string(),
 		UPLOADTHING_TOKEN: z.string(),
+		SPOTIFY_CLIENT_ID: z.string(),
+		SPOTIFY_CLIENT_SECRET: z.string(),
 	},
 
 	/**
@@ -64,6 +66,8 @@ export const env = createEnv({
 		UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN,
 		UPLOADTHING_SECRET: process.env.UPLOADTHING_SECRET,
 		UPLOADTHING_TOKEN: process.env.UPLOADTHING_TOKEN,
+		SPOTIFY_CLIENT_ID: process.env.SPOTIFY_CLIENT_ID,
+		SPOTIFY_CLIENT_SECRET: process.env.SPOTIFY_CLIENT_SECRET,
 	},
 	/**
 	 * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially

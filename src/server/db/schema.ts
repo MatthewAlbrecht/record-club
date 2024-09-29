@@ -1,4 +1,3 @@
-// Example model schema from the Drizzle docs
 // https://orm.drizzle.team/docs/sql-schema-declaration
 
 import { type InferInsertModel, type InferSelectModel, sql } from "drizzle-orm"
@@ -9,22 +8,23 @@ import {
 	decimal,
 	index,
 	integer,
+	jsonb,
 	pgEnum,
 	pgTableCreator,
 	serial,
+	text,
 	timestamp,
 	uniqueIndex,
 	varchar,
 } from "drizzle-orm/pg-core"
 
-/**
- * Table creator with schema prefix for multi-project schema support.
- */
 export const createTable = pgTableCreator((name) => `record-club_${name}`)
 
 /**
- * Enums
+ * ----------------------------------------------------------------------------
+ * Enums -----------------------------------------------------------------------
  */
+
 export const clubTypeEnum = pgEnum("club_type", [
 	"live",
 	"self-paced-ordered",
@@ -47,8 +47,21 @@ export const clubMemberRoleEnum = pgEnum("club_member_role", [
 	"member",
 ])
 
+export const releaseDatePrecisionEnum = pgEnum("release_date_precision", [
+	"year",
+	"month",
+	"day",
+])
+
+export const albumTypeEnum = pgEnum("album_type", [
+	"album",
+	"single",
+	"compilation",
+])
+
 /**
- * Tables
+ * ----------------------------------------------------------------------------
+ * Tables ---------------------------------------------------------------------
  */
 
 export const users = createTable(
@@ -110,11 +123,38 @@ export const albums = createTable(
 		releaseYear: integer("release_year"),
 		releaseMonth: integer("release_month"),
 		releaseDay: integer("release_day"),
+		releaseDate: date("release_date").notNull().default(sql`CURRENT_DATE`),
+		releaseDatePrecision: releaseDatePrecisionEnum("release_date_precision")
+			.notNull()
+			.default("year"),
+		albumType: albumTypeEnum("album_type").notNull().default("album"),
+		totalTracks: integer("total_tracks").notNull().default(0),
+		spotifyId: varchar("spotify_id", { length: 256 }),
+		spotifyImageUrl: varchar("spotify_image_url", { length: 256 })
+			.notNull()
+			.default(""),
+		spotifyImageWidth: integer("spotify_image_width"),
+		spotifyImageHeight: integer("spotify_image_height"),
+		genres: text("genres").notNull().default("[]").$type<string[]>(),
+		name: varchar("name", { length: 256 }).notNull().default(""),
+		isrc: varchar("isrc", { length: 16 }),
+		ean: varchar("ean", { length: 16 }),
+		upc: varchar("upc", { length: 16 }),
+		tracks: jsonb("tracks").notNull().default("[]").$type<
+			{
+				name: string
+				preview_url: string | null
+				duration_ms: number
+				id: string
+				track_number: number
+			}[]
+		>(),
 		createdAt: timestamp("created_at", { withTimezone: true })
 			.default(sql`CURRENT_TIMESTAMP`)
 			.notNull(),
 	},
 	(album) => ({
+		uniqueSpotifyId: uniqueIndex("unique_spotify_id").on(album.spotifyId),
 		uniqueTitleArtist: uniqueIndex("unique_title_artist").on(
 			album.title,
 			album.artist,
@@ -132,9 +172,6 @@ export const questions = createTable("question", {
 		.notNull(),
 })
 
-/**
- * New clubQuestions table to map clubs to their selected questions.
- */
 export const clubQuestions = createTable(
 	"club_question",
 	{
@@ -246,9 +283,6 @@ export const clubMembers = createTable(
 	}),
 )
 
-/**
- * New userClubAlbumProgress table to track user progress on clubAlbums.
- */
 export const userClubAlbumProgress = createTable(
 	"user_club_album_progress",
 	{
@@ -296,8 +330,45 @@ export const images = createTable("image", {
 		.notNull(),
 })
 
+export const artists = createTable(
+	"artist",
+	{
+		id: serial("id").primaryKey(),
+		name: varchar("name", { length: 256 }).notNull(),
+		spotifyId: varchar("spotify_id", { length: 256 }),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.default(sql`CURRENT_TIMESTAMP`)
+			.notNull(),
+	},
+	(table) => ({
+		uniqueArtistSpotifyId: uniqueIndex("unique_artist_spotify_id").on(
+			table.spotifyId,
+		),
+	}),
+)
+
+export const albumArtists = createTable(
+	"album_artist",
+	{
+		id: serial("id").primaryKey(),
+		albumId: integer("album_id")
+			.references(() => albums.id)
+			.notNull(),
+		artistId: integer("artist_id")
+			.references(() => artists.id)
+			.notNull(),
+	},
+	(table) => ({
+		uniqueAlbumArtist: uniqueIndex("unique_album_artist").on(
+			table.albumId,
+			table.artistId,
+		),
+	}),
+)
+
 /**
- * Relations
+ * -------------------------------------------------------------------------
+ * Relations ---------------------------------------------------------------
  */
 
 export const clubsRelations = relations(clubs, ({ many, one }) => ({
@@ -395,7 +466,8 @@ export const userClubAlbumProgressRelations = relations(
 )
 
 /**
- * Types
+ * ----------------------------------------------------------------------------
+ * Types ----------------------------------------------------------------------
  */
 
 export type SelectUser = InferSelectModel<typeof users>
@@ -431,3 +503,6 @@ export type InsertUserClubAlbumProgress = InferInsertModel<
 
 export type SelectImage = InferSelectModel<typeof images>
 export type InsertImage = InferInsertModel<typeof images>
+
+export type SelectArtist = InferSelectModel<typeof artists>
+export type InsertArtist = InferInsertModel<typeof artists>

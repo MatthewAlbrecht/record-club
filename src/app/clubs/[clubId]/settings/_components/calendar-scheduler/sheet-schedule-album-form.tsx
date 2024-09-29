@@ -1,3 +1,4 @@
+import { CalendarIcon } from "lucide-react"
 import { useAction } from "next-safe-action/hooks"
 import type { Dispatch, SetStateAction } from "react"
 import { toast } from "sonner"
@@ -79,9 +80,20 @@ export function SheetBodyScheduleAlbumForm({
 					control={form.control}
 					render={({ field }) => (
 						<FormItem>
-							<FormLabel>Scheduled for</FormLabel>
+							<FormLabel>Schedule for</FormLabel>
 							<FormControl>
-								<Input type="date" {...field} />
+								<div className="relative">
+									<Input
+										type="date"
+										className="[&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:right-0 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:p-3 [&::-webkit-calendar-picker-indicator]:opacity-0"
+										{...field}
+										value={field.value ?? ""}
+										onChange={(e) => field.onChange(e.target.value ?? "")}
+									/>
+									<span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+										<CalendarIcon className="h-5 w-5 text-foreground" />
+									</span>
+								</div>
 							</FormControl>
 						</FormItem>
 					)}
