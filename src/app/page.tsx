@@ -40,15 +40,15 @@ async function SignedInHome() {
 	const upcomingAlbums = await getUpcomingAlbums(clubIds, userId)
 
 	return (
-		<div className="flex flex-col gap-10 @container">
+		<div className="@container flex flex-col gap-10">
 			<Link href={Routes.NewClub} className="max-w-96">
 				<ButtonCreateLarge label="Create your own club" />
 			</Link>
 			<div>
-				<h3 className="mb-4 text-base font-semibold leading-6 text-slate-900">
+				<h3 className="mb-4 font-semibold text-base text-slate-900 leading-6">
 					My clubs
 				</h3>
-				<ul className="grid grid-cols-2 gap-4 @2xl:grid-cols-3 @5xl:grid-cols-4">
+				<ul className="grid @2xl:grid-cols-3 @5xl:grid-cols-4 grid-cols-2 gap-4">
 					{clubsImAMemberOf.map(({ club, image }) => (
 						<Link key={club.id} href={Routes.Club(club.id)}>
 							<CardClub key={club.id} club={{ ...club, image }} />
@@ -57,10 +57,10 @@ async function SignedInHome() {
 				</ul>
 			</div>
 			<div>
-				<h3 className="mb-4 text-base font-semibold leading-6 text-slate-900">
+				<h3 className="mb-4 font-semibold text-base text-slate-900 leading-6">
 					Coming up
 				</h3>
-				<ul className="grid grid-cols-1 gap-2 gap-x-6 @2xl:grid-cols-2 @2xl:gap-4 @2xl:gap-x-8 @5xl:grid-cols-3 @5xl:gap-6 @5xl:gap-x-10">
+				<ul className="grid @2xl:grid-cols-2 @5xl:grid-cols-3 grid-cols-1 @2xl:gap-4 @5xl:gap-6 gap-2 @2xl:gap-x-8 @5xl:gap-x-10 gap-x-6">
 					{upcomingAlbums.map((clubAlbum) => (
 						<CardUpcomingAlbum key={clubAlbum.id} clubAlbum={clubAlbum} />
 					))}

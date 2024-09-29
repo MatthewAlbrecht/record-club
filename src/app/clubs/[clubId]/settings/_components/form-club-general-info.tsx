@@ -19,10 +19,10 @@ export function FormClubGeneralInfo({
 	return (
 		<div className="divide-y">
 			<div className="pb-8">
-				<h1 className="text-base font-semibold leading-7 text-slate-900">
+				<h1 className="font-semibold text-base text-slate-900 leading-7">
 					Cover photo
 				</h1>
-				<p className="mt-1 text-sm leading-6 text-slate-600">
+				<p className="mt-1 text-slate-600 text-sm leading-6">
 					Upload a cover photo for your club and choose a focal point.
 				</p>
 
@@ -104,9 +104,9 @@ function FocalPointPicker({
 	}
 
 	return (
-		<div className="mt-4 rounded-lg overflow-hidden relative group">
-			<div className="absolute inset-0  flex items-start justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity ease-out duration-300">
-				<p className="text-white text-lg font-medium mt-4">
+		<div className="group relative mt-4 overflow-hidden rounded-lg">
+			<div className="absolute inset-0 flex items-start justify-center bg-black/50 opacity-0 transition-opacity duration-300 ease-out group-hover:opacity-100">
+				<p className="mt-4 font-medium text-lg text-white">
 					Adjust the focal point
 				</p>
 			</div>
@@ -115,7 +115,7 @@ function FocalPointPicker({
 				alt="Club cover photo"
 				width={640}
 				height={360}
-				className="w-full h-auto"
+				className="h-auto w-full"
 			/>
 			<div
 				className="absolute inset-0 cursor-move"
@@ -124,7 +124,7 @@ function FocalPointPicker({
 				onDragEnd={handleDragEnd}
 			>
 				<div
-					className={`absolute w-6 h-6 bg-white border-2 border-blue-500 rounded-full -translate-x-1/2 -translate-y-1/2 shadow-lg ${
+					className={`-translate-x-1/2 -translate-y-1/2 absolute h-6 w-6 rounded-full border-2 border-blue-500 bg-white shadow-lg ${
 						isDragging ? "opacity-30" : ""
 					}`}
 					style={{ left: `${focalPoint.x}%`, top: `${focalPoint.y}%` }}

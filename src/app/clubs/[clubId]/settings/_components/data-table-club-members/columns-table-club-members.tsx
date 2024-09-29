@@ -217,7 +217,7 @@ export const columns: ColumnDef<GetClubMembers[number]>[] = [
 								Remove member
 							</DropdownMenuItem>
 							<DropdownMenuItem
-								className="cursor-pointer text-destructive focus:text-white focus:bg-destructive"
+								className="cursor-pointer text-destructive focus:bg-destructive focus:text-white"
 								onClick={() => setDialogType("block")}
 							>
 								Block member

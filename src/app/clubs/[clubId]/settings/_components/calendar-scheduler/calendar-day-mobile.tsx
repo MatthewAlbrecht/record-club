@@ -85,9 +85,9 @@ export function CalendarDaySelected({
 				{day.albums.map((album) => (
 					<li
 						key={album.id}
-						className="group flex p-2 focus-within:bg-gray-50 hover:bg-gray-50 gap-x-2 items-center"
+						className="group flex items-center gap-x-2 p-2 focus-within:bg-gray-50 hover:bg-gray-50"
 					>
-						<div className="flex-none h-12 w-12 rounded-sm bg-gray-100">
+						<div className="h-12 w-12 flex-none rounded-sm bg-gray-100">
 							{album.album.spotifyImageUrl && (
 								<Image
 									src={album.album.spotifyImageUrl}
@@ -99,8 +99,8 @@ export function CalendarDaySelected({
 							)}
 						</div>
 						<div className="flex-auto">
-							<p className="font-semibold text-nowrap">{album.album.name}</p>
-							<p className="text-gray-500 text-sm text-nowrap">
+							<p className="text-nowrap font-semibold">{album.album.name}</p>
+							<p className="text-nowrap text-gray-500 text-sm">
 								{album.album.artistNames}
 							</p>
 						</div>
@@ -119,7 +119,7 @@ export function CalendarDaySelected({
 									Reschedule
 								</DropdownMenuItem>
 								<DropdownMenuItem
-									className="cursor-pointer text-destructive focus:text-white focus:bg-destructive"
+									className="cursor-pointer text-destructive focus:bg-destructive focus:text-white"
 									onClick={() => handleRemoveClick(album)}
 								>
 									Remove

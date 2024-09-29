@@ -8,7 +8,7 @@ export function NavbarMobileHeader() {
 				<span className="sr-only">Open sidebar</span>
 				<Disc3Icon aria-hidden="true" className="h-8 w-8" />
 			</button>
-			<div className="flex-1 text-sm font-semibold leading-6 text-slate-600">
+			<div className="flex-1 font-semibold text-slate-600 text-sm leading-6">
 				RecordClubs
 			</div>
 			<SignedIn>

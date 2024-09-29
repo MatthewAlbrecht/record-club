@@ -1,7 +1,8 @@
 // https://orm.drizzle.team/docs/sql-schema-declaration
 
-import { type InferInsertModel, type InferSelectModel, sql } from "drizzle-orm"
+import { sql } from "drizzle-orm"
 import { relations } from "drizzle-orm"
+import type { InferInsertModel, InferSelectModel } from "drizzle-orm"
 import {
 	boolean,
 	date,
@@ -17,7 +18,6 @@ import {
 	uniqueIndex,
 	varchar,
 } from "drizzle-orm/pg-core"
-
 export const createTable = pgTableCreator((name) => `record-club_${name}`)
 
 /**
@@ -57,6 +57,15 @@ export const albumTypeEnum = pgEnum("album_type", [
 	"album",
 	"single",
 	"compilation",
+])
+
+export const clubInviteStatusEnum = pgEnum("club_invite_status", [
+	"created",
+	"sent",
+	"revoked",
+	"accepted",
+	"declined",
+	"seen",
 ])
 
 /**
@@ -356,6 +365,38 @@ export const albumArtists = createTable(
 	}),
 )
 
+export const clubInvites = createTable("club_invite", {
+	id: serial("id").primaryKey(),
+	clubId: integer("club_id")
+		.references(() => clubs.id)
+		.notNull(),
+	email: varchar("email", { length: 256 }).notNull(),
+	expiresAt: timestamp("expires_at", { withTimezone: true })
+		.default(sql`CURRENT_TIMESTAMP + INTERVAL '4 weeks'`)
+		.notNull(),
+	sentAt: timestamp("sent_at", { withTimezone: true }),
+	acceptedAt: timestamp("accepted_at", { withTimezone: true }),
+	declinedAt: timestamp("declined_at", { withTimezone: true }),
+	seenAt: timestamp("seen_at", { withTimezone: true }),
+	revokedAt: timestamp("revoked_at", { withTimezone: true }),
+	createdById: varchar("created_by_id")
+		.references(() => users.id)
+		.notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true })
+		.default(sql`CURRENT_TIMESTAMP`)
+		.notNull(),
+	status: clubInviteStatusEnum("status")
+		.notNull()
+		.generatedAlwaysAs(sql`CASE
+						WHEN "declined_at" IS NOT NULL THEN 'declined'::club_invite_status
+						WHEN "accepted_at" IS NOT NULL THEN 'accepted'::club_invite_status
+						WHEN "revoked_at" IS NOT NULL THEN 'revoked'::club_invite_status
+						WHEN "seen_at" IS NOT NULL THEN 'seen'::club_invite_status
+						WHEN "sent_at" IS NOT NULL THEN 'sent'::club_invite_status
+						ELSE 'created'::club_invite_status
+					END`),
+})
+
 /**
  * -------------------------------------------------------------------------
  * Relations ---------------------------------------------------------------
@@ -461,6 +502,17 @@ export const albumsRelations = relations(albums, ({ many }) => ({
 
 export const artistsRelations = relations(artists, ({ many }) => ({
 	albums: many(albumArtists),
+}))
+
+export const clubInvitesRelations = relations(clubInvites, ({ one }) => ({
+	club: one(clubs, {
+		fields: [clubInvites.clubId],
+		references: [clubs.id],
+	}),
+	createdBy: one(users, {
+		fields: [clubInvites.createdById],
+		references: [users.id],
+	}),
 }))
 
 /**

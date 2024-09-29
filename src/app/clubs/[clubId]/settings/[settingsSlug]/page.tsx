@@ -7,9 +7,9 @@ import {
 	getActiveClubMemberById,
 	getClubWithAlbums,
 } from "~/server/api/queries"
-import { TableClubMembers } from "../_components/data-table-club-members/table-club-members"
 import { FormClubGeneralInfo } from "../_components/form-club-general-info"
 import { PageClubSettingsSchedule } from "../_components/page-club-schedule"
+import { PageClubSettingsMembers } from "../_components/page-club-settings-members"
 import { PageClubSettingsQuestions } from "../_components/page-club-settings-questions"
 
 export default async function ClubSettingsPage({
@@ -63,11 +63,10 @@ export default async function ClubSettingsPage({
 				<PageClubSettingsSchedule club={club} />
 			</TabsContent>
 			<TabsContent value="members" className="mt-0">
-				<h2 className="text-xl font-bold my-8">Members</h2>
-				<TableClubMembers club={club} />
+				<PageClubSettingsMembers club={club} />
 			</TabsContent>
 			<TabsContent value="general" className="mt-0">
-				<h2 className="text-xl font-bold my-8">General Information</h2>
+				<h2 className="my-8 font-bold text-xl">General Information</h2>
 				<FormClubGeneralInfo club={club} />
 			</TabsContent>
 			<TabsContent value="questions" className="mt-0">

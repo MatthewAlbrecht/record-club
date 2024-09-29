@@ -62,7 +62,7 @@ export function SheetBodyAddAlbumForm({
 		<Form {...form}>
 			<Button
 				variant="link"
-				className="pl-0 -mt-2 mb-4"
+				className="-mt-2 mb-4 pl-0"
 				type="button"
 				onClick={() =>
 					setNewAlbumSheet((prev) => ({
@@ -71,7 +71,7 @@ export function SheetBodyAddAlbumForm({
 					}))
 				}
 			>
-				<ArrowLeftIcon className="h-4 w-4 mr-2" />
+				<ArrowLeftIcon className="mr-2 h-4 w-4" />
 				Back to schedule album
 			</Button>
 			<form

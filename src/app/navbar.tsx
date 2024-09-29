@@ -18,7 +18,7 @@ export async function Navbar() {
 						<NavbarNavigation />
 					</li>
 					<li>
-						<div className="text-xs font-semibold leading-6 text-slate-400">
+						<div className="font-semibold text-slate-400 text-xs leading-6">
 							Your clubs
 						</div>
 						<ul className="flex flex-1 flex-col gap-y-7">

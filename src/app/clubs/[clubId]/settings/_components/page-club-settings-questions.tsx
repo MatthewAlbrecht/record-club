@@ -37,7 +37,7 @@ export async function PageClubSettingsQuestions({
 
 	return (
 		<>
-			<h2 className="text-xl font-bold my-8">Questions</h2>
+			<h2 className="my-8 font-bold text-xl">Questions</h2>
 			<FormClubModifyQuestions club={club} questions={filteredQuestions} />
 		</>
 	)

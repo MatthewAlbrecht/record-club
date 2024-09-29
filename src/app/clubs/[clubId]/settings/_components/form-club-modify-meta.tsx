@@ -1,8 +1,5 @@
 "use client"
-
-import { zodResolver } from "@hookform/resolvers/zod"
 import { useAction } from "next-safe-action/hooks"
-import { useForm } from "react-hook-form"
 import { toast } from "sonner"
 import { z } from "zod"
 import { Button } from "~/components/ui/button"
@@ -15,7 +12,9 @@ import {
 	FormMessage,
 } from "~/components/ui/form"
 import { Input } from "~/components/ui/input"
+import { Switch } from "~/components/ui/switch"
 import { Textarea } from "~/components/ui/textarea"
+import { useZodForm } from "~/lib/hooks/useZodForm"
 import { modifyClubMeta } from "~/server/api/clubs-actions"
 import type { GetClubWithAlbums } from "~/server/api/queries"
 
@@ -23,6 +22,7 @@ export const modifyClubMetaSchema = z.object({
 	name: z.string().min(1),
 	shortDescription: z.string().min(3),
 	longDescription: z.string().min(3),
+	isPublic: z.boolean(),
 })
 
 export type ModifyClubMetaForm = z.infer<typeof modifyClubMetaSchema>
@@ -30,13 +30,14 @@ export type ModifyClubMetaForm = z.infer<typeof modifyClubMetaSchema>
 export function FormRecordClubModifyMeta({
 	club,
 }: { club: NonNullable<GetClubWithAlbums> }) {
-	const form = useForm({
+	const form = useZodForm({
+		schema: modifyClubMetaSchema,
 		defaultValues: {
 			name: club.name,
 			shortDescription: club.shortDescription,
 			longDescription: club.longDescription,
+			isPublic: club.isPublic,
 		},
-		resolver: zodResolver(modifyClubMetaSchema),
 	})
 
 	const { execute } = useAction(modifyClubMeta, {
@@ -56,16 +57,32 @@ export function FormRecordClubModifyMeta({
 	return (
 		<Form {...form}>
 			<form onSubmit={form.handleSubmit(onSubmit)}>
-				<h1 className="text-base font-semibold leading-7 text-slate-900">
+				<h1 className="font-semibold text-base text-slate-900 leading-7">
 					Modify club information
 				</h1>
-				<p className="mt-1 text-sm leading-6 text-slate-600">
+				<p className="mt-1 text-slate-600 text-sm leading-6">
 					This is your club's chance to shine. Use this section to tell your
 					members what your club is all about.
 				</p>
 
 				<div className="mt-10">
 					<div className="space-y-8">
+						<FormField
+							name="isPublic"
+							control={form.control}
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>Public club</FormLabel>
+									<FormControl>
+										<Switch
+											checked={field.value}
+											onCheckedChange={field.onChange}
+										/>
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
 						<FormField
 							name="name"
 							control={form.control}
@@ -107,7 +124,7 @@ export function FormRecordClubModifyMeta({
 						/>
 					</div>
 
-					<div className="flex items-center justify-end gap-x-6 mt-4">
+					<div className="mt-4 flex items-center justify-end gap-x-6">
 						<Button type="submit">Save changes</Button>
 					</div>
 				</div>

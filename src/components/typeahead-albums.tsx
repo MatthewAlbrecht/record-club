@@ -111,7 +111,7 @@ export function TypeaheadAlbums({
 					<Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
 				</Button>
 			</PopoverTrigger>
-			<PopoverContent className="p-0 relative overflow-hidden">
+			<PopoverContent className="relative overflow-hidden p-0">
 				<Command shouldFilter={false}>
 					<CommandInput
 						placeholder="Search or Spotify link..."
@@ -170,13 +170,13 @@ export function TypeaheadAlbums({
 							animate={{ opacity: 1 }}
 							exit={{ opacity: 0 }}
 							transition={{ duration: 0.2, type: "spring", bounce: 0 }}
-							className="absolute inset-0 flex flex-col items-center justify-center bg-slate-950/90 backdrop-blur-sm text-slate-100"
+							className="absolute inset-0 flex flex-col items-center justify-center bg-slate-950/90 text-slate-100 backdrop-blur-sm"
 						>
 							<svg
 								viewBox="0 0 24 24"
 								fill="none"
 								xmlns="http://www.w3.org/2000/svg"
-								className="w-12 h-12"
+								className="h-12 w-12"
 							>
 								<title>Spotify Logo</title>
 								<path
@@ -185,8 +185,8 @@ export function TypeaheadAlbums({
 								/>
 							</svg>
 
-							<div className="flex items-center justify-center mt-6">
-								<Loader2 className="h-4 w-4 animate-spin mr-2" />
+							<div className="mt-6 flex items-center justify-center">
+								<Loader2 className="mr-2 h-4 w-4 animate-spin" />
 								Searching Spotify...
 							</div>
 						</motion.div>

@@ -3,6 +3,7 @@
 import { auth } from "@clerk/nextjs/server"
 import { notFound } from "next/navigation"
 import { db } from "../db"
+import { clubMembers } from "../db/schema"
 
 export type GetClubMembers = Awaited<ReturnType<typeof getClubMembers>>
 export const getClubMembers = async (clubId: number) => {
@@ -96,4 +97,35 @@ export const getActiveClubMemberById = async (
 export type GetAllQuestions = Awaited<ReturnType<typeof getAllQuestions>>
 export const getAllQuestions = async () => {
 	return db.query.questions.findMany()
+}
+
+export type GetPublicClubsImNotAMemberOf = Awaited<
+	ReturnType<typeof getPublicClubsImNotAMemberOf>
+>
+export const getPublicClubsImNotAMemberOf = async (userId: string) => {
+	return db.query.clubs.findMany({
+		where: (clubs, { not, inArray, eq, and }) =>
+			and(
+				not(
+					inArray(
+						clubs.id,
+						db
+							.select({ id: clubMembers.clubId })
+							.from(clubMembers)
+							.where(eq(clubMembers.userId, userId)),
+					),
+				),
+				eq(clubs.isPublic, true),
+			),
+		with: {
+			image: true,
+		},
+	})
+}
+
+export type GetClubInvites = Awaited<ReturnType<typeof getClubInvites>>
+export const getClubInvites = async (clubId: number) => {
+	return db.query.clubInvites.findMany({
+		where: (clubInvites, { eq }) => eq(clubInvites.clubId, clubId),
+	})
 }

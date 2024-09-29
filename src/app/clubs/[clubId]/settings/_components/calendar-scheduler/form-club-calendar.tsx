@@ -104,7 +104,7 @@ export default function FormClubCalendar({
 			onDragCancel={handleDragCancel}
 		>
 			<div className="lg:flex lg:h-full lg:flex-col">
-				<header className="flex items-center justify-between border-b border-gray-200  py-4 lg:flex-none">
+				<header className="flex items-center justify-between border-gray-200 border-b py-4 lg:flex-none">
 					<div className="relative flex rounded-md bg-white shadow-sm">
 						<PreviousButton
 							handlePreviousMonth={handlePreviousMonth}
@@ -112,7 +112,7 @@ export default function FormClubCalendar({
 						/>
 						<button
 							type="button"
-							className="border-y border-gray-300 px-3.5 text-sm font-semibold text-gray-900 hover:bg-gray-50 focus:relative block min-w-[143px]"
+							className="block min-w-[143px] border-gray-300 border-y px-3.5 font-semibold text-gray-900 text-sm hover:bg-gray-50 focus:relative"
 						>
 							{currentMonthLabel}
 						</button>
@@ -139,7 +139,7 @@ export default function FormClubCalendar({
 					</div>
 				</header>
 				<div className="shadow ring-1 ring-black ring-opacity-5 lg:flex lg:flex-auto lg:flex-col">
-					<div className="grid grid-cols-7 gap-px border-b border-gray-300 bg-gray-200 text-center text-xs font-semibold leading-6 text-gray-700 lg:flex-none">
+					<div className="grid grid-cols-7 gap-px border-gray-300 border-b bg-gray-200 text-center font-semibold text-gray-700 text-xs leading-6 lg:flex-none">
 						<div className="bg-white py-2">
 							M<span className="sr-only sm:not-sr-only">on</span>
 						</div>
@@ -162,7 +162,7 @@ export default function FormClubCalendar({
 							S<span className="sr-only sm:not-sr-only">un</span>
 						</div>
 					</div>
-					<div className="flex bg-gray-200 text-xs leading-6 text-gray-700 lg:flex-auto">
+					<div className="flex bg-gray-200 text-gray-700 text-xs leading-6 lg:flex-auto">
 						<div className="hidden w-full lg:grid lg:grid-cols-7 lg:gap-px">
 							{days.map((day) => (
 								<CalendarDayDesktop
@@ -375,8 +375,8 @@ export default function FormClubCalendar({
 
 function DraggedOverlay({ clubAlbum }: { clubAlbum: ClubAlbum }) {
 	return (
-		<div className="bg-white flex items-center cursor-grabbing p-2 pr-6 rounded-md shadow-2xl w-fit">
-			<div className="flex items-center justify-center size-12 bg-slate-200">
+		<div className="flex w-fit cursor-grabbing items-center rounded-md bg-white p-2 pr-6 shadow-2xl">
+			<div className="flex size-12 items-center justify-center bg-slate-200">
 				{clubAlbum.album.spotifyImageUrl && (
 					<Image
 						src={clubAlbum.album.spotifyImageUrl}
@@ -387,9 +387,9 @@ function DraggedOverlay({ clubAlbum }: { clubAlbum: ClubAlbum }) {
 					/>
 				)}
 			</div>
-			<div className="flex flex-col ml-2">
-				<p className="font-semibold text-nowrap">{clubAlbum.album.name}</p>
-				<p className="text-gray-500 text-sm text-nowrap">
+			<div className="ml-2 flex flex-col">
+				<p className="text-nowrap font-semibold">{clubAlbum.album.name}</p>
+				<p className="text-nowrap text-gray-500 text-sm">
 					{clubAlbum.album.artistNames}
 				</p>
 			</div>
@@ -422,7 +422,7 @@ function PreviousButton({
 		<button
 			type="button"
 			className={cn(
-				"flex h-9 items-center justify-center rounded-l-md border-y border-l border-gray-300 text-gray-400 hover:text-gray-500 focus:relative w-9 pr-0 hover:bg-gray-50",
+				"flex h-9 w-9 items-center justify-center rounded-l-md border-gray-300 border-y border-l pr-0 text-gray-400 hover:bg-gray-50 hover:text-gray-500 focus:relative",
 				isDragging && "border-indigo-300 border-r",
 			)}
 			onClick={handlePreviousMonth}
@@ -459,7 +459,7 @@ function NextButton({
 		<button
 			type="button"
 			className={cn(
-				"flex h-9 items-center justify-center rounded-r-md border-y border-r border-gray-300 text-gray-400 hover:text-gray-500 focus:relative w-9 pl-0 md:hover:bg-gray-50",
+				"flex h-9 w-9 items-center justify-center rounded-r-md border-gray-300 border-y border-r pl-0 text-gray-400 hover:text-gray-500 focus:relative md:hover:bg-gray-50",
 				isDragging && "border-indigo-300 border-l ",
 			)}
 			onClick={handleNextMonth}

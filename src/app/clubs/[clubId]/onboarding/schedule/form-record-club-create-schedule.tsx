@@ -79,10 +79,10 @@ export function FormRecordClubCreateSchedule({
 	return (
 		<Form {...form}>
 			<form onSubmit={form.handleSubmit(onSubmit)} className="mx-auto max-w-lg">
-				<h1 className="text-base font-semibold leading-7 text-slate-900">
+				<h1 className="font-semibold text-base text-slate-900 leading-7">
 					Schedule your first album
 				</h1>
-				<p className="mt-1 text-sm leading-6 text-slate-600">
+				<p className="mt-1 text-slate-600 text-sm leading-6">
 					Select a date and album to put on the schedule.
 				</p>
 

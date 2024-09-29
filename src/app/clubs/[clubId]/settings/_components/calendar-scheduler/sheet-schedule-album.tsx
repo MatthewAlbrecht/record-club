@@ -43,7 +43,7 @@ export function SheetScheduleAlbum({
 										Schedule a new album for the record club.
 									</SheetDescription>
 								</SheetHeader>
-								<div className="py-6 flex-1">
+								<div className="flex-1 py-6">
 									<SheetBodyScheduleAlbumForm
 										club={club}
 										setNewAlbumSheet={setNewAlbumSheet}

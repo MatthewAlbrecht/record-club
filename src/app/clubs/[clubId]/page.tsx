@@ -58,9 +58,9 @@ async function ClubPageIsMember({
 
 	return (
 		<div className="@container">
-			<div className="relative -mx-main-inner -mt-main-inner">
+			<div className="-mx-main-inner -mt-main-inner relative">
 				{club.image ? (
-					<div className="relative h-48 w-full @md:h-64 @lg:h-96">
+					<div className="relative @lg:h-96 @md:h-64 h-48 w-full">
 						<Image
 							src={club.image.url}
 							alt={club.name}
@@ -92,8 +92,8 @@ async function ClubPageIsMember({
 							)}
 						</div>
 						<div>
-							<h1 className="text-5xl font-bold text-slate-50">{club.name}</h1>
-							<p className="mt-3 max-w-prose text-xl text-muted-foreground text-slate-300">
+							<h1 className="font-bold text-5xl text-slate-50">{club.name}</h1>
+							<p className="mt-3 max-w-prose text-muted-foreground text-slate-300 text-xl">
 								{club.shortDescription}
 							</p>
 						</div>
@@ -102,10 +102,10 @@ async function ClubPageIsMember({
 			</div>
 			<div className="mt-10">
 				<div className="flex flex-col gap-6">
-					<h2 className="text-sm font-medium text-slate-500">
+					<h2 className="font-medium text-slate-500 text-sm">
 						Upcoming albums
 					</h2>
-					<ul className="grid grid-cols-1 gap-2 gap-x-6 @2xl:grid-cols-2 @2xl:gap-4 @2xl:gap-x-8 @5xl:grid-cols-3 @5xl:gap-6 @5xl:gap-x-10">
+					<ul className="grid @2xl:grid-cols-2 @5xl:grid-cols-3 grid-cols-1 @2xl:gap-4 @5xl:gap-6 gap-2 @2xl:gap-x-8 @5xl:gap-x-10 gap-x-6">
 						{upcomingAlbums.length > 0 ? (
 							upcomingAlbums.map((clubAlbum) => (
 								<CardUpcomingAlbum key={clubAlbum.id} clubAlbum={clubAlbum} />

@@ -1,6 +1,6 @@
 "use server" // don't forget to add this!
 
-import { eq } from "drizzle-orm"
+import { eq, sql } from "drizzle-orm"
 import { revalidatePath } from "next/cache"
 import { z } from "zod"
 import { authActionClient } from "~/lib/safe-action"
@@ -9,6 +9,7 @@ import {
 	type SelectAnswer,
 	answers as answersTable,
 	clubAlbums,
+	clubInvites,
 	clubMembers,
 	clubQuestions,
 	clubs,
@@ -21,6 +22,7 @@ const createClubSchema = z.object({
 	name: z.string().min(3).max(128),
 	shortDescription: z.string().min(3).max(128),
 	longDescription: z.string().min(3).max(2048),
+	isPublic: z.boolean(),
 })
 
 export const createClub = authActionClient
@@ -28,7 +30,7 @@ export const createClub = authActionClient
 	.schema(createClubSchema)
 	.action(
 		async ({
-			parsedInput: { name, shortDescription, longDescription },
+			parsedInput: { name, shortDescription, longDescription, isPublic },
 			ctx: { userId },
 		}) => {
 			const club = await db.transaction(async (trx) => {
@@ -40,6 +42,7 @@ export const createClub = authActionClient
 						longDescription,
 						createdById: userId,
 						ownedById: userId,
+						isPublic: isPublic,
 					})
 					.returning()
 
@@ -750,6 +753,7 @@ const modifyClubMetaSchema = z.object({
 	name: z.string().min(1),
 	shortDescription: z.string().min(3),
 	longDescription: z.string().min(3),
+	isPublic: z.boolean(),
 })
 
 export const modifyClubMeta = authActionClient
@@ -757,7 +761,13 @@ export const modifyClubMeta = authActionClient
 	.schema(modifyClubMetaSchema)
 	.action(
 		async ({
-			parsedInput: { clubId, name, shortDescription, longDescription },
+			parsedInput: {
+				clubId,
+				name,
+				shortDescription,
+				longDescription,
+				isPublic,
+			},
 			ctx: { userId },
 		}) => {
 			const currentUser = await db.query.clubMembers.findFirst({
@@ -775,6 +785,7 @@ export const modifyClubMeta = authActionClient
 					name,
 					shortDescription,
 					longDescription,
+					isPublic,
 				})
 				.where(eq(clubs.id, clubId))
 
@@ -847,3 +858,139 @@ export const rescheduleAlbum = authActionClient
 			}
 		},
 	)
+
+const inviteMembersSchema = z.object({
+	clubId: z.number(),
+	emails: z.array(z.string().email()),
+})
+
+export const inviteMembers = authActionClient
+	.metadata({ actionName: "inviteMembers" })
+	.schema(inviteMembersSchema)
+	.action(async ({ parsedInput: { clubId, emails }, ctx: { userId } }) => {
+		const currentUser = await db.query.clubMembers.findFirst({
+			where: (clubMember, { eq }) => eq(clubMember.userId, userId),
+		})
+
+		if (
+			!currentUser ||
+			(currentUser.role !== "owner" && currentUser.role !== "admin")
+		) {
+			throw new ActionError("You are not an admin of this club")
+		}
+
+		const club = await db.query.clubs.findFirst({
+			where: (club, { eq }) => eq(club.id, clubId),
+		})
+
+		if (!club) {
+			throw new ActionError("Club not found")
+		}
+
+		const invites = await db
+			.insert(clubInvites)
+			.values(
+				emails.map((email) => ({
+					clubId,
+					email,
+					createdById: userId,
+				})),
+			)
+			.onConflictDoUpdate({
+				target: [clubInvites.clubId, clubInvites.email],
+				set: {
+					expiresAt: sql`CURRENT_TIMESTAMP + INTERVAL '4 weeks'`,
+					revokedAt: null,
+				},
+			})
+			.returning()
+
+		revalidatePath(Routes.ClubSettings(clubId, "members"))
+
+		return { invites }
+	})
+
+const revokeInviteSchema = z.object({
+	clubInviteId: z.number(),
+})
+
+export const revokeInvite = authActionClient
+	.metadata({ actionName: "revokeInvite" })
+	.schema(revokeInviteSchema)
+	.action(async ({ parsedInput: { clubInviteId }, ctx: { userId } }) => {
+		const clubInvite = await db.query.clubInvites.findFirst({
+			where: (clubInvite, { eq }) => eq(clubInvite.id, clubInviteId),
+		})
+
+		if (!clubInvite) {
+			throw new ActionError("Club invite not found")
+		}
+
+		if (clubInvite.status === "accepted" || clubInvite.status === "declined") {
+			throw new ActionError("Invite already accepted or declined")
+		}
+
+		if (clubInvite.revokedAt) {
+			throw new ActionError("Invite already revoked")
+		}
+
+		const member = await db.query.clubMembers.findFirst({
+			where: (clubMember, { eq, and }) =>
+				and(
+					eq(clubMember.clubId, clubInvite.clubId),
+					eq(clubMember.userId, userId),
+				),
+		})
+
+		if (!member) {
+			throw new ActionError("You are not a member of this club")
+		}
+
+		if (member.role !== "owner" && member.role !== "admin") {
+			throw new ActionError("You do not have permission to revoke invites")
+		}
+
+		await db
+			.update(clubInvites)
+			.set({ revokedAt: new Date() })
+			.where(eq(clubInvites.id, clubInviteId))
+
+		revalidatePath(Routes.ClubSettings(clubInvite.clubId, "members"))
+
+		return { success: true }
+	})
+
+const resendInviteSchema = z.object({
+	clubInviteId: z.number(),
+})
+
+export const resendInvite = authActionClient
+	.metadata({ actionName: "resendInvite" })
+	.schema(resendInviteSchema)
+	.action(async ({ parsedInput: { clubInviteId }, ctx: { userId } }) => {
+		const clubInvite = await db.query.clubInvites.findFirst({
+			where: (clubInvite, { eq }) => eq(clubInvite.id, clubInviteId),
+		})
+
+		if (!clubInvite) {
+			throw new ActionError("Club invite not found")
+		}
+
+		const member = await db.query.clubMembers.findFirst({
+			where: (clubMember, { eq, and }) =>
+				and(
+					eq(clubMember.clubId, clubInvite.clubId),
+					eq(clubMember.userId, userId),
+				),
+		})
+
+		if (!member) {
+			throw new ActionError("You are not a member of this club")
+		}
+
+		if (member.role !== "owner" && member.role !== "admin") {
+			throw new ActionError("You do not have permission to resend invites")
+		}
+
+		return { success: true }
+	})

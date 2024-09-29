@@ -26,6 +26,7 @@ export const env = createEnv({
 		UPLOADTHING_TOKEN: z.string(),
 		SPOTIFY_CLIENT_ID: z.string(),
 		SPOTIFY_CLIENT_SECRET: z.string(),
+		RESEND_API_KEY: z.string(),
 	},
 
 	/**
@@ -68,6 +69,7 @@ export const env = createEnv({
 		UPLOADTHING_TOKEN: process.env.UPLOADTHING_TOKEN,
 		SPOTIFY_CLIENT_ID: process.env.SPOTIFY_CLIENT_ID,
 		SPOTIFY_CLIENT_SECRET: process.env.SPOTIFY_CLIENT_SECRET,
+		RESEND_API_KEY: process.env.RESEND_API_KEY,
 	},
 	/**
 	 * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially

@@ -3,8 +3,7 @@ import Link from "next/link"
 import { notFound } from "next/navigation"
 import { CardClub } from "~/components/card-club"
 import { Routes } from "~/lib/routes"
-import { db } from "~/server/db"
-import { clubMembers } from "~/server/db/schema"
+import { getPublicClubsImNotAMemberOf } from "~/server/api/queries"
 
 export default async function DiscoverPage() {
 	const { userId } = auth()
@@ -13,15 +12,15 @@ export default async function DiscoverPage() {
 		return notFound()
 	}
 
-	const clubsImNotAMemberOf = await getClubsImNotAMemberOf(userId)
+	const clubsImNotAMemberOf = await getPublicClubsImNotAMemberOf(userId)
 
 	return clubsImNotAMemberOf.length > 0 ? (
 		<div className="@container">
-			<h3 className="mb-4 text-base font-semibold leading-6 text-slate-900">
+			<h3 className="mb-4 font-semibold text-base text-slate-900 leading-6">
 				Popular clubs
 			</h3>
 
-			<div className="grid grid-cols-2 gap-4 @2xl:grid-cols-3 @5xl:grid-cols-4">
+			<div className="grid @2xl:grid-cols-3 @5xl:grid-cols-4 grid-cols-2 gap-4">
 				{clubsImNotAMemberOf.map((club) => (
 					<Link key={club.id} href={Routes.Club(club.id)}>
 						<CardClub key={club.id} club={club} />
@@ -36,22 +35,4 @@ export default async function DiscoverPage() {
 			</p>
 		</div>
 	)
-}
-
-function getClubsImNotAMemberOf(userId: string) {
-	return db.query.clubs.findMany({
-		where: (clubs, { not, inArray, eq }) =>
-			not(
-				inArray(
-					clubs.id,
-					db
-						.select({ id: clubMembers.clubId })
-						.from(clubMembers)
-						.where(eq(clubMembers.userId, userId)),
-				),
-			),
-		with: {
-			image: true,
-		},
-	})
 }

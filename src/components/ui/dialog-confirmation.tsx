@@ -38,12 +38,12 @@ export function DialogConfirmation({
 		<Dialog open={open} onOpenChange={onOpenChange}>
 			{children && <DialogTrigger asChild>{children}</DialogTrigger>}
 			<DialogContent>
-				<DialogHeader className="flex flex-col items-start md:flex-row md:items-center gap-x-4 gap-y-4">
-					<div className="inline-flex items-center justify-center p-1 w-fit bg-red-100 rounded-full border-red-50 border-4">
-						<Icon className="w-6 h-6 text-red-600" />
+				<DialogHeader className="flex flex-col items-start gap-x-4 gap-y-4 md:flex-row md:items-center">
+					<div className="inline-flex w-fit items-center justify-center rounded-full border-4 border-red-50 bg-red-100 p-1">
+						<Icon className="h-6 w-6 text-red-600" />
 					</div>
 					<div className="relative top-3">
-						<DialogTitle className="text-left top-3 ">{title}</DialogTitle>
+						<DialogTitle className="top-3 text-left ">{title}</DialogTitle>
 						{description && (
 							<DialogDescription className="mt-1.5 text-left">
 								{description}
@@ -51,7 +51,7 @@ export function DialogConfirmation({
 						)}
 					</div>
 				</DialogHeader>
-				<DialogFooter className="flex justify-end gap-2 flex-col-reverse md:flex-row mt-6 md:mt-6">
+				<DialogFooter className="mt-6 flex flex-col-reverse justify-end gap-2 md:mt-6 md:flex-row">
 					<Button {...secondaryAction}>{secondaryAction.text}</Button>
 					<Button {...primaryAction}>{primaryAction.text}</Button>
 				</DialogFooter>

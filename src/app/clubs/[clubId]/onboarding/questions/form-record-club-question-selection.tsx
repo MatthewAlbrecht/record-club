@@ -63,10 +63,10 @@ export function FormRecordClubQuestionSelection({
 	return (
 		<Form {...form}>
 			<form onSubmit={form.handleSubmit(onSubmit)}>
-				<h1 className="text-base font-semibold leading-7 text-slate-900">
+				<h1 className="font-semibold text-base text-slate-900 leading-7">
 					Select questions
 				</h1>
-				<p className="mt-1 text-sm leading-6 text-slate-600">
+				<p className="mt-1 text-slate-600 text-sm leading-6">
 					These questions will be asked to the club members after each album
 					they listen to, and their answers will be public to all club members.
 				</p>

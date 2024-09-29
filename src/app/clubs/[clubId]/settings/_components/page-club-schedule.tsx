@@ -6,7 +6,7 @@ export async function PageClubSettingsSchedule({
 }: { club: NonNullable<GetClubWithAlbums> }) {
 	return (
 		<>
-			<h2 className="text-xl font-bold my-8">Schedule</h2>
+			<h2 className="my-8 font-bold text-xl">Schedule</h2>
 			<FormClubCalendar club={club} />
 		</>
 	)

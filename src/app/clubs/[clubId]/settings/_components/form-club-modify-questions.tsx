@@ -74,12 +74,12 @@ export function FormClubModifyQuestions({
 	}
 
 	return (
-		<div className="max-w-2xl flex flex-col gap-y-10">
+		<div className="flex max-w-2xl flex-col gap-y-10">
 			<div>
-				<h1 className="text-base font-semibold leading-7 text-slate-900">
+				<h1 className="font-semibold text-base text-slate-900 leading-7">
 					Reorder questions
 				</h1>
-				<p className="mt-1 text-sm leading-6 text-slate-600">
+				<p className="mt-1 text-slate-600 text-sm leading-6">
 					Drag and drop the questions to reorder them. This order will be used
 					when the questions are displayed to the members.
 				</p>
@@ -93,7 +93,7 @@ export function FormClubModifyQuestions({
 					onDragStart={handleDragStart}
 				>
 					<ul
-						className="divide-y mt-4 data-[disabled=true]:opacity-50"
+						className="mt-4 divide-y data-[disabled=true]:opacity-50"
 						data-disabled={isExecuting}
 						aria-disabled={isExecuting}
 					>
@@ -151,21 +151,21 @@ function QuestionListItem({
 
 	return (
 		<li
-			className="flex gap-x-4 py-2 hover:bg-slate-50 px-2 -mx-2 data-[disabled=true]:opacity-50"
+			className="-mx-2 flex gap-x-4 px-2 py-2 hover:bg-slate-50 data-[disabled=true]:opacity-50"
 			data-disabled={isTransitioning}
 		>
-			<p className="text-xs font-semibold text-slate-600 border border-slate-200 min-w-[22px] h-[22px] rounded-sm flex items-center justify-center">
+			<p className="flex h-[22px] min-w-[22px] items-center justify-center rounded-sm border border-slate-200 font-semibold text-slate-600 text-xs">
 				<span>{index + 1}</span>
 			</p>
 			<div className="flex flex-col">
 				<Badge variant="outline" className="w-fit rounded-sm">
 					{question.question.label}
 				</Badge>
-				<p className="text-sm text-slate-600 mt-1 relative left-1">
+				<p className="relative left-1 mt-1 text-slate-600 text-sm">
 					{question.question.text}
 				</p>
 			</div>
-			<div className="flex gap-x-2 ml-auto self-center items-center">
+			<div className="ml-auto flex items-center gap-x-2 self-center">
 				<DialogConfirmationHideQuestion
 					question={question}
 					handlePrimaryAction={() => handleHideQuestion(question.id)}

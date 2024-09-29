@@ -1,11 +1,16 @@
 import { auth } from "@clerk/nextjs/server"
 import { notFound } from "next/navigation"
 import { DataTable } from "~/components/ui/data-table"
-import { type GetClubMembers, getClubMembers } from "~/server/api/queries"
-import type { SelectClub } from "~/server/db/schema"
+import {
+	type GetClubMembers,
+	type GetClubWithAlbums,
+	getClubMembers,
+} from "~/server/api/queries"
 import { columns } from "./columns-table-club-members"
 
-export async function TableClubMembers({ club }: { club: SelectClub }) {
+export async function TableClubMembers({
+	club,
+}: { club: NonNullable<GetClubWithAlbums> }) {
 	const { userId } = auth()
 	const clubMembers = await getClubMembers(club.id)
 

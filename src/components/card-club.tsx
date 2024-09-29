@@ -18,7 +18,7 @@ export function CardClub({
 	return (
 		<Card
 			key={club.id}
-			className="flex h-full flex-col overflow-hidden shadow-sm @container"
+			className="@container flex h-full flex-col overflow-hidden shadow-sm"
 		>
 			{club.image ? (
 				<div className="relative h-40 w-full">
@@ -35,11 +35,11 @@ export function CardClub({
 			) : (
 				<div className="h-40 w-full bg-gradient-to-bl from-slate-50 to-slate-200" />
 			)}
-			<CardHeader className="p-3 py-2 @xs:p-5 @xs:pt-3">
+			<CardHeader className="@xs:p-5 p-3 py-2 @xs:pt-3">
 				<CardTitle className="mt-2 text-base text-slate-800">
 					{club.name}
 				</CardTitle>
-				<CardDescription className="text-sm text-slate-500">
+				<CardDescription className="text-slate-500 text-sm">
 					{club.shortDescription}
 				</CardDescription>
 			</CardHeader>

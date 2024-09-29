@@ -42,16 +42,16 @@ export function CardUpcomingAlbum({
 				)}
 				<div className="flex h-full flex-grow flex-col justify-between overflow-hidden py-2">
 					<div className="min-w-0">
-						<h3 className="overflow-hidden text-ellipsis whitespace-nowrap text-lg font-medium text-slate-700">
+						<h3 className="overflow-hidden text-ellipsis whitespace-nowrap font-medium text-lg text-slate-700">
 							{clubAlbum.album.artistNames}
 						</h3>
-						<p className="overflow-hidden text-ellipsis whitespace-nowrap text-sm text-slate-500">
+						<p className="overflow-hidden text-ellipsis whitespace-nowrap text-slate-500 text-sm">
 							{clubAlbum.album.name}
 						</p>
 					</div>
 					<div className="flex items-center justify-between gap-2">
-						<span className="text-sm text-slate-500">{relativeDate}</span>
-						<div className="flex flex-row items-center gap-1 text-sm text-slate-500">
+						<span className="text-slate-500 text-sm">{relativeDate}</span>
+						<div className="flex flex-row items-center gap-1 text-slate-500 text-sm">
 							{clubAlbum.userProgress[0]?.hasListened
 								? "Explore reviews"
 								: "Track progress"}

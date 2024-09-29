@@ -29,7 +29,7 @@ export function CalendarDayDesktop({
 			key={day.date}
 			className={cn(
 				day.isCurrentMonth ? "bg-white" : "bg-gray-50 text-gray-500",
-				"relative px-3 py-2 border border-transparent min-h-20 group",
+				"group relative min-h-20 border border-transparent px-3 py-2",
 				isOver && "border-indigo-500",
 			)}
 			ref={setNodeRef}
@@ -54,7 +54,7 @@ export function CalendarDayDesktop({
 			{thisDaysClubAlbums ? (
 				<Button
 					size="icon"
-					className="absolute top-2 right-3 h-6 w-6 bg-red-600 hidden group-hover:flex hover:bg-red-500"
+					className="absolute top-2 right-3 hidden h-6 w-6 bg-red-600 hover:bg-red-500 group-hover:flex"
 					onClick={handleRemoveAlbum}
 				>
 					<MinusIcon className="h-4 w-4" />
@@ -62,7 +62,7 @@ export function CalendarDayDesktop({
 			) : (
 				<Button
 					size="icon"
-					className="absolute top-2 right-3 h-6 w-6 bg-indigo-600 hidden group-hover:flex hover:bg-indigo-500"
+					className="absolute top-2 right-3 hidden h-6 w-6 bg-indigo-600 hover:bg-indigo-500 group-hover:flex"
 					onClick={handleScheduleAlbum}
 				>
 					<PlusIcon className="h-4 w-4" />

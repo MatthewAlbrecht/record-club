@@ -18,7 +18,7 @@ export function NavbarNavigation() {
 							pathname === item.href
 								? "bg-slate-50 text-indigo-600"
 								: "text-slate-700 hover:bg-slate-50 hover:text-indigo-600",
-							"group flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6",
+							"group flex gap-x-3 rounded-md p-2 font-semibold text-sm leading-6",
 						)}
 					>
 						<item.icon

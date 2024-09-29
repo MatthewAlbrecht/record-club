@@ -76,7 +76,7 @@ export const columns: ColumnDef<NonNullable<GetAllQuestions>[number]>[] = [
 			return (
 				<>
 					<Button variant="ghost" size="sm" onClick={handleAddToClub}>
-						<PlusCircleIcon className="size-4 mr-2" />
+						<PlusCircleIcon className="mr-2 size-4" />
 						Add to club
 					</Button>
 				</>

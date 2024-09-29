@@ -75,7 +75,7 @@ export default async function ProgressPage({
 					<div className="h-32 w-32 rounded-sm bg-slate-200" />
 				)}
 				<div>
-					<h1 className="text-2xl font-bold">{clubAlbum.album.artistNames}</h1>
+					<h1 className="font-bold text-2xl">{clubAlbum.album.artistNames}</h1>
 					<p className="text-muted-foreground">{clubAlbum.album.name}</p>
 				</div>
 			</div>

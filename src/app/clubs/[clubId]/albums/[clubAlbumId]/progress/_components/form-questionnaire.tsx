@@ -67,10 +67,10 @@ export function FormQuestionnaire({
 				})
 			}}
 		>
-			<h2 className="text-xs font-bold uppercase">Questions</h2>
+			<h2 className="font-bold text-xs uppercase">Questions</h2>
 			<ul className="flex flex-col gap-4">
 				<li className="flex flex-col py-2">
-					<span className="text-xs text-muted-foreground">
+					<span className="text-muted-foreground text-xs">
 						Finished listening
 					</span>
 					<div>
@@ -82,7 +82,7 @@ export function FormQuestionnaire({
 				</li>
 				{questions.map(({ question, id: clubQuestionId }, index) => (
 					<li key={question.id} className="flex flex-col py-2">
-						<span className="text-xs text-muted-foreground">{index + 1}</span>
+						<span className="text-muted-foreground text-xs">{index + 1}</span>
 						<div>
 							<p className="mt-1">{question.text}</p>
 							<div className="mt-2">
