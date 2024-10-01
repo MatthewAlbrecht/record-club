@@ -3,7 +3,11 @@ import { redirect } from "next/navigation"
 import { db } from "~/server/db"
 import { users } from "~/server/db/schema"
 
-export default async function PostSignInPage() {
+export default async function PostSignInPage({
+	searchParams,
+}: {
+	searchParams: { redirectUrl: string }
+}) {
 	const { userId } = auth()
 
 	if (!userId) {
@@ -17,7 +21,8 @@ export default async function PostSignInPage() {
 		.values({
 			id: userId,
 			email: user.emailAddresses[0]?.emailAddress ?? "",
-			username: user.username,
+			// biome-ignore lint/style/noNonNullAssertion: we force it on clerk
+			username: user.username!,
 			firstName: user.firstName,
 			lastName: user.lastName,
 			avatarUrl: user.imageUrl,
@@ -27,12 +32,13 @@ export default async function PostSignInPage() {
 			target: users.id,
 			set: {
 				email: user.emailAddresses[0]?.emailAddress ?? "",
-				username: user.username,
+				// biome-ignore lint/style/noNonNullAssertion: we force it on clerk
+				username: user.username!,
 				firstName: user.firstName,
 				lastName: user.lastName,
 				avatarUrl: user.imageUrl,
 			},
 		})
 
-	return redirect("/")
+	return redirect(searchParams.redirectUrl ?? "/")
 }

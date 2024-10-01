@@ -14,4 +14,6 @@ export const Routes = {
 	ClubOnboardingQuestions: (clubId: Id) =>
 		`/clubs/${clubId}/onboarding/questions`,
 	NewClub: "/clubs/new",
+	PostSignIn: "/post-sign-in",
+	ClubJoin: (clubId: Id, inviteId: Id) => `/clubs/${clubId}/join/${inviteId}`,
 }

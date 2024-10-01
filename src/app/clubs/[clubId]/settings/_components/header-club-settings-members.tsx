@@ -70,6 +70,7 @@ function SheetInviteMembers({
 	const { execute: executeInviteMembers } = useAction(inviteMembers, {
 		onSuccess: ({ data }) => {
 			if (!data?.invites) return
+			console.log(data)
 			toast.success(
 				`Sent ${data.invites.length} invite${data.invites.length > 1 ? "s" : ""}`,
 			)

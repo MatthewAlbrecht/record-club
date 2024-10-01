@@ -16,6 +16,7 @@ import {
 	text,
 	timestamp,
 	uniqueIndex,
+	uuid,
 	varchar,
 } from "drizzle-orm/pg-core"
 export const createTable = pgTableCreator((name) => `record-club_${name}`)
@@ -83,7 +84,7 @@ export const users = createTable(
 		updatedAt: timestamp("updated_at", { withTimezone: true }).$onUpdate(
 			() => new Date(),
 		),
-		username: varchar("username", { length: 20 }),
+		username: varchar("username", { length: 20 }).notNull(),
 		email: varchar("email", { length: 256 }).notNull(),
 		firstName: varchar("first_name", { length: 32 }),
 		lastName: varchar("last_name", { length: 32 }),
@@ -367,14 +368,17 @@ export const albumArtists = createTable(
 
 export const clubInvites = createTable("club_invite", {
 	id: serial("id").primaryKey(),
+	publicId: uuid("public_id").defaultRandom().notNull(),
 	clubId: integer("club_id")
 		.references(() => clubs.id)
 		.notNull(),
+	emailId: uuid("email_id"),
 	email: varchar("email", { length: 256 }).notNull(),
 	expiresAt: timestamp("expires_at", { withTimezone: true })
 		.default(sql`CURRENT_TIMESTAMP + INTERVAL '4 weeks'`)
 		.notNull(),
 	sentAt: timestamp("sent_at", { withTimezone: true }),
+	sendFailedAt: timestamp("send_failed_at", { withTimezone: true }),
 	acceptedAt: timestamp("accepted_at", { withTimezone: true }),
 	declinedAt: timestamp("declined_at", { withTimezone: true }),
 	seenAt: timestamp("seen_at", { withTimezone: true }),
@@ -502,6 +506,17 @@ export const albumsRelations = relations(albums, ({ many }) => ({
 
 export const artistsRelations = relations(artists, ({ many }) => ({
 	albums: many(albumArtists),
+}))
+
+export const albumArtistsRelations = relations(albumArtists, ({ one }) => ({
+	album: one(albums, {
+		fields: [albumArtists.albumId],
+		references: [albums.id],
+	}),
+	artist: one(artists, {
+		fields: [albumArtists.artistId],
+		references: [artists.id],
+	}),
 }))
 
 export const clubInvitesRelations = relations(clubInvites, ({ one }) => ({

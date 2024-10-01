@@ -18,7 +18,7 @@ export function CardClub({
 	return (
 		<Card
 			key={club.id}
-			className="@container flex h-full flex-col overflow-hidden shadow-sm"
+			className="@container flex h-full flex-col overflow-hidden shadow-md"
 		>
 			{club.image ? (
 				<div className="relative h-40 w-full">

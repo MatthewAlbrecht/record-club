@@ -1,8 +1,13 @@
 "use server" // don't forget to add this!
 
-import { eq, sql } from "drizzle-orm"
+import { isBefore, parseISO } from "date-fns"
+import { eq } from "drizzle-orm"
+import StripeWelcomeEmail from "emails/stripe-welcome"
 import { revalidatePath } from "next/cache"
+import { redirect } from "next/navigation"
 import { z } from "zod"
+import { zfd } from "zod-form-data"
+import { Routes } from "~/lib/routes"
 import { authActionClient } from "~/lib/safe-action"
 import { db } from "../db"
 import {
@@ -16,6 +21,10 @@ import {
 	images,
 	userClubAlbumProgress as userClubAlbumProgressTable,
 } from "../db/schema"
+import resend from "../resend"
+import { acceptClubInvite } from "./mutations"
+import { getClubMembership, getCurrentUser } from "./queries"
+import { ActionError, DatabaseError, PGErrorCodes } from "./utils"
 
 // This schema is used to validate input from client.
 const createClubSchema = z.object({
@@ -143,10 +152,6 @@ const removeAlbumFromClubSchema = z.object({
 	clubAlbumId: z.number(),
 	clubId: z.number(),
 })
-
-import { isBefore, parseISO } from "date-fns"
-import { Routes } from "~/lib/routes"
-import { ActionError, DatabaseError, PGErrorCodes } from "./utils"
 
 export const removeAlbumFromClub = authActionClient
 	.metadata({ actionName: "removeAlbumFromClub" })
@@ -870,6 +875,9 @@ export const inviteMembers = authActionClient
 	.action(async ({ parsedInput: { clubId, emails }, ctx: { userId } }) => {
 		const currentUser = await db.query.clubMembers.findFirst({
 			where: (clubMember, { eq }) => eq(clubMember.userId, userId),
+			with: {
+				user: true,
+			},
 		})
 
 		if (
@@ -887,27 +895,61 @@ export const inviteMembers = authActionClient
 			throw new ActionError("Club not found")
 		}
 
-		const invites = await db
-			.insert(clubInvites)
-			.values(
-				emails.map((email) => ({
-					clubId,
-					email,
-					createdById: userId,
-				})),
-			)
-			.onConflictDoUpdate({
-				target: [clubInvites.clubId, clubInvites.email],
-				set: {
-					expiresAt: sql`CURRENT_TIMESTAMP + INTERVAL '4 weeks'`,
-					revokedAt: null,
-				},
+		try {
+			const invites = await db
+				.insert(clubInvites)
+				.values(
+					emails.map((email) => ({
+						clubId,
+						email,
+						createdById: userId,
+					})),
+				)
+				.returning()
+
+			revalidatePath(Routes.ClubSettings(clubId, "members"))
+
+			const emailPromises = invites.map(async (invite) => {
+				return resend.emails.send({
+					from: "Record-Clubs <hello@record-clubs.com>",
+					to: invite.email,
+					subject: "Join our record club!",
+					react: (
+						<StripeWelcomeEmail
+							inviter={currentUser.user.username}
+							recordClubName={club.name}
+							recordClubId={club.id}
+							clubInvitePublicId={invite.publicId}
+						/>
+					),
+				})
 			})
-			.returning()
 
-		revalidatePath(Routes.ClubSettings(clubId, "members"))
+			const results = await Promise.allSettled(emailPromises)
 
-		return { invites }
+			results.forEach(async (result, index) => {
+				if (result.status === "rejected") {
+					console.error(result.reason)
+					await db
+						.update(clubInvites)
+						.set({ sendFailedAt: new Date() })
+						// biome-ignore lint/style/noNonNullAssertion: this must exists because we use a map on invites to create the promise.allSettled argument
+						.where(eq(clubInvites.id, invites[index]!.id))
+				}
+				if (result.status === "fulfilled") {
+					await db
+						.update(clubInvites)
+						.set({ sentAt: new Date(), emailId: result.value.data?.id })
+						// biome-ignore lint/style/noNonNullAssertion: this must exists because we use a map on invites to create the promise.allSettled argument
+						.where(eq(clubInvites.id, invites[index]!.id))
+				}
+			})
+
+			return { invites }
+		} catch (error) {
+			console.error(error)
+			throw new ActionError("Failed to invite members")
+		}
 	})
 
 const revokeInviteSchema = z.object({
@@ -993,4 +1035,98 @@ export const resendInvite = authActionClient
 		}
 
 		return { success: true }
+	})
+
+const acceptInviteSchema = zfd.formData({
+	clubInviteId: zfd.numeric(),
+})
+export const acceptInvite = authActionClient
+	.metadata({ actionName: "acceptInvite" })
+	.schema(acceptInviteSchema)
+	.action(async ({ parsedInput: { clubInviteId }, ctx: { userId } }) => {
+		const user = await getCurrentUser(userId)
+
+		// confirm user is is signed in & exists - this should only be hit if it's a brand new user
+		if (!user) {
+			throw new ActionError("User not found")
+		}
+
+		const clubInvite = await db.query.clubInvites.findFirst({
+			where: (clubInvite, { eq }) => eq(clubInvite.id, clubInviteId),
+		})
+
+		if (!clubInvite) {
+			throw new ActionError("Club invite not found")
+		}
+
+		const clubMembership = await getClubMembership(
+			Number(clubInvite.clubId),
+			userId,
+		)
+
+		// confirm user is not already an active member
+		if (clubMembership && !clubMembership.inactiveAt) {
+			throw new ActionError("You are already a member of this club")
+		}
+
+		// confirm user is not blocked
+		if (clubMembership?.blockedAt) {
+			throw new ActionError("You are blocked from this club")
+		}
+
+		// confirm invite exists and is for the current user
+		if (clubInvite.email !== user.email) {
+			throw new ActionError("Invite not found")
+		}
+
+		// confirm invite is not expired
+		if (clubInvite.expiresAt < new Date()) {
+			throw new ActionError("Invite expired")
+		}
+
+		await acceptClubInvite({
+			userId,
+			clubId: Number(clubInvite.clubId),
+			inviteId: clubInvite.publicId,
+		})
+
+		revalidatePath(Routes.Home)
+		redirect(`${Routes.Club(clubInvite.clubId)}?inviteAccepted=true`)
+	})
+
+const rejectInviteSchema = zfd.formData({
+	clubInviteId: zfd.numeric(),
+})
+export const rejectInvite = authActionClient
+	.metadata({ actionName: "rejectInvite" })
+	.schema(rejectInviteSchema)
+	.action(async ({ parsedInput: { clubInviteId }, ctx: { userId } }) => {
+		const user = await getCurrentUser(userId)
+
+		if (!user) {
+			throw new ActionError("User not found")
+		}
+
+		const clubInvite = await db.query.clubInvites.findFirst({
+			where: (clubInvite, { eq }) => eq(clubInvite.id, clubInviteId),
+		})
+
+		if (!clubInvite) {
+			throw new ActionError("Club invite not found")
+		}
+
+		if (clubInvite.email !== user.email) {
+			throw new ActionError("Invite not found")
+		}
+
+		await db
+			.update(clubInvites)
+			.set({
+				declinedAt: new Date(),
+				seenAt: new Date(),
+			})
+			.where(eq(clubInvites.id, clubInviteId))
+
+		revalidatePath(Routes.Home)
+		redirect(`${Routes.Home}?inviteRejected=true`)
 	})
