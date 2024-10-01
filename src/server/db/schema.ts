@@ -605,3 +605,6 @@ export type InsertArtist = InferInsertModel<typeof artists>
 
 export type SelectClubOpenInvite = InferSelectModel<typeof clubOpenInvites>
 export type InsertClubOpenInvite = InferInsertModel<typeof clubOpenInvites>
+
+export type SelectActionLog = InferSelectModel<typeof actionLogs>
+export type InsertActionLog = InferInsertModel<typeof actionLogs>

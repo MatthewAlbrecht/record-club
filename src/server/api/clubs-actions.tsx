@@ -1,5 +1,4 @@
 "use server" // don't forget to add this!
-
 import { isBefore, parseISO } from "date-fns"
 import { eq } from "drizzle-orm"
 import StripeWelcomeEmail from "emails/stripe-welcome"
@@ -25,6 +24,8 @@ import {
 import resend from "../resend"
 import { acceptClubInvite } from "./mutations"
 import { getClubMembership, getCurrentUser } from "./queries"
+import * as Tasks from "./tasks"
+import { Action } from "./tasks"
 import { ActionError, DatabaseError, PGErrorCodes } from "./utils"
 
 // This schema is used to validate input from client.
@@ -65,6 +66,11 @@ export const createClub = authActionClient
 
 				// biome-ignore lint/style/noNonNullAssertion: <explanation>
 				return newClub[0]!
+			})
+
+			await Tasks.LogAction(Action.CreateClub, {
+				userId,
+				clubId: club.id,
 			})
 
 			return { club }
@@ -268,6 +274,11 @@ export const joinClubAction = authActionClient
 				target: [clubMembers.userId, clubMembers.clubId],
 				set: { inactiveAt: null },
 			})
+
+		await Tasks.LogAction(Action.JoinClub, {
+			userId,
+			clubId: club.id,
+		})
 
 		revalidatePath(`/clubs/${clubId}`)
 		return { club }

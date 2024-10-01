@@ -27,6 +27,12 @@
 					"fix": "safe"
 				}
 			},
+			"style": {
+				"useImportType": {
+					"level": "off",
+					"fix": "none"
+				}
+			},
 			"nursery": {
 				"useSortedClasses": {
 					"level": "warn",
