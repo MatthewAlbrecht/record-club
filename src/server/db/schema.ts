@@ -412,6 +412,26 @@ export const clubOpenInvites = createTable("club_open_invite", {
 		.notNull(),
 })
 
+export const actionLogs = createTable("action_log", {
+	id: serial("id").primaryKey(),
+	action: varchar("action", { length: 256 }).notNull(),
+	userId: varchar("user_id")
+		.references(() => users.id)
+		.notNull(),
+	clubId: integer("club_id").references(() => clubs.id),
+	clubAlbumId: integer("club_album_id").references(() => clubAlbums.id),
+	userClubAlbumProgressId: integer("user_club_album_progress_id").references(
+		() => userClubAlbumProgress.id,
+	),
+	metadata: jsonb("metadata")
+		.notNull()
+		.default("{}")
+		.$type<Record<string, unknown>>(),
+	createdAt: timestamp("created_at", { withTimezone: true })
+		.default(sql`CURRENT_TIMESTAMP`)
+		.notNull(),
+})
+
 /**
  * -------------------------------------------------------------------------
  * Relations ---------------------------------------------------------------
