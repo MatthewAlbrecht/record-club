@@ -101,6 +101,10 @@ async function SignedInHome() {
 						message: "Invite declined",
 						variant: "success",
 					},
+					inviteRevoked: {
+						message: "Invite link no longer active",
+						variant: "error",
+					},
 				}}
 			/>
 		</>

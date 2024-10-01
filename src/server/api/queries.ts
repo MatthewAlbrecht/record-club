@@ -243,3 +243,20 @@ export const getOpenClubInvites = async (userId: string) => {
 		},
 	})
 }
+
+export type GetClubOpenInvite = Awaited<ReturnType<typeof getClubOpenInvite>>
+export const getClubOpenInvite = async (clubId: number) => {
+	return db.query.clubOpenInvites.findFirst({
+		where: (clubOpenInvite, { eq, and, isNull }) =>
+			and(eq(clubOpenInvite.clubId, clubId), isNull(clubOpenInvite.revokedAt)),
+	})
+}
+
+export type GetClubOpenInviteByPublicId = Awaited<
+	ReturnType<typeof getClubOpenInviteByPublicId>
+>
+export const getClubOpenInviteByPublicId = async (publicId: string) => {
+	return db.query.clubOpenInvites.findFirst({
+		where: (clubOpenInvite, { eq }) => eq(clubOpenInvite.publicId, publicId),
+	})
+}

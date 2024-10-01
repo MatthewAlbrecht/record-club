@@ -14,10 +14,18 @@ export const acceptClubInvite = async ({
 	inviteId: string
 }) => {
 	return db.transaction(async (tx) => {
-		await tx.insert(clubMembers).values({
-			clubId: Number(clubId),
-			userId,
-		})
+		await tx
+			.insert(clubMembers)
+			.values({
+				clubId: Number(clubId),
+				userId,
+			})
+			.onConflictDoUpdate({
+				target: [clubMembers.userId, clubMembers.clubId],
+				set: {
+					inactiveAt: null,
+				},
+			})
 
 		await tx
 			.update(clubInvites)
@@ -27,4 +35,28 @@ export const acceptClubInvite = async ({
 			})
 			.where(eq(clubInvites.publicId, inviteId))
 	})
+}
+
+export type AcceptClubOpenInvite = Awaited<
+	ReturnType<typeof acceptClubOpenInvite>
+>
+export const acceptClubOpenInvite = async ({
+	userId,
+	clubId,
+}: {
+	userId: string
+	clubId: number
+}) => {
+	return db
+		.insert(clubMembers)
+		.values({
+			clubId: Number(clubId),
+			userId,
+		})
+		.onConflictDoUpdate({
+			target: [clubMembers.userId, clubMembers.clubId],
+			set: {
+				inactiveAt: null,
+			},
+		})
 }

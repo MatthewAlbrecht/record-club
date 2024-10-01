@@ -73,7 +73,6 @@ export const clubInviteStatusEnum = pgEnum("club_invite_status", [
  * ----------------------------------------------------------------------------
  * Tables ---------------------------------------------------------------------
  */
-
 export const users = createTable(
 	"user",
 	{
@@ -401,6 +400,18 @@ export const clubInvites = createTable("club_invite", {
 					END`),
 })
 
+export const clubOpenInvites = createTable("club_open_invite", {
+	id: serial("id").primaryKey(),
+	publicId: uuid("public_id").defaultRandom().notNull(),
+	clubId: integer("club_id")
+		.references(() => clubs.id)
+		.notNull(),
+	revokedAt: timestamp("revoked_at", { withTimezone: true }),
+	createdAt: timestamp("created_at", { withTimezone: true })
+		.default(sql`CURRENT_TIMESTAMP`)
+		.notNull(),
+})
+
 /**
  * -------------------------------------------------------------------------
  * Relations ---------------------------------------------------------------
@@ -571,3 +582,6 @@ export type InsertImage = InferInsertModel<typeof images>
 
 export type SelectArtist = InferSelectModel<typeof artists>
 export type InsertArtist = InferInsertModel<typeof artists>
+
+export type SelectClubOpenInvite = InferSelectModel<typeof clubOpenInvites>
+export type InsertClubOpenInvite = InferInsertModel<typeof clubOpenInvites>

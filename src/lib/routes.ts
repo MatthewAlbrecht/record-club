@@ -16,4 +16,9 @@ export const Routes = {
 	NewClub: "/clubs/new",
 	PostSignIn: "/post-sign-in",
 	ClubJoin: (clubId: Id, inviteId: Id) => `/clubs/${clubId}/join/${inviteId}`,
+	ClubOpenInvite: ({
+		clubId,
+		openInviteId,
+	}: { clubId: Id; openInviteId: Id }) =>
+		`/clubs/${clubId}/invite/${openInviteId}`,
 }

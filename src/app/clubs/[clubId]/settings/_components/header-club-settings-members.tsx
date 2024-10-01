@@ -1,6 +1,6 @@
 "use client"
 
-import { XIcon } from "lucide-react"
+import { CopyIcon, Loader, RefreshCwIcon, XIcon } from "lucide-react"
 import { useAction } from "next-safe-action/hooks"
 import { useState } from "react"
 import { toast } from "sonner"
@@ -25,19 +25,124 @@ import {
 	SheetTitle,
 	SheetTrigger,
 } from "~/components/ui/sheet"
+import { env } from "~/env"
 import { useZodForm } from "~/lib/hooks/useZodForm"
-import { inviteMembers } from "~/server/api/clubs-actions"
-import type { GetClubWithAlbums } from "~/server/api/queries"
+import { Routes } from "~/lib/routes"
+import { cn } from "~/lib/utils"
+import {
+	createInviteLink,
+	inviteMembers,
+	refreshOpenInviteLink,
+} from "~/server/api/clubs-actions"
+import type { GetClubOpenInvite, GetClubWithAlbums } from "~/server/api/queries"
 
 export function HeaderClubSettingsMembers({
 	club,
-}: { club: NonNullable<GetClubWithAlbums> }) {
+	openInvite,
+}: { club: NonNullable<GetClubWithAlbums>; openInvite: GetClubOpenInvite }) {
 	return (
-		<div className="mb-8 flex items-center justify-between">
+		<div className="mb-8 flex flex-col justify-between gap-4 md:flex-row md:items-center">
 			<h2 className="font-bold text-xl">Members</h2>
-			{!club.isPublic ? <SheetInviteMembers club={club} /> : null}
+			<div className="flex flex-row-reverse items-center justify-end gap-2 md:flex-row md:justify-start">
+				<ButtonInviteLink club={club} openInvite={openInvite} />
+				{!club.isPublic ? <SheetInviteMembers club={club} /> : null}
+			</div>
 		</div>
 	)
+}
+
+function ButtonInviteLink({
+	club,
+	openInvite,
+}: { club: NonNullable<GetClubWithAlbums>; openInvite: GetClubOpenInvite }) {
+	const [isCopying, setIsCopying] = useState(false)
+	const { execute: executeCreateInviteLink } = useAction(createInviteLink, {
+		onSuccess: () => {
+			toast.success("Invite link created")
+		},
+		onError: ({ error }) => {
+			toast.error(error.serverError ?? "Something went wrong")
+		},
+	})
+
+	const { execute: executeRefreshOpenInviteLink, isPending: isRefreshing } =
+		useAction(refreshOpenInviteLink, {
+			onSuccess: () => {
+				toast.success("Invite link refreshed")
+			},
+			onError: ({ error }) => {
+				toast.error(error.serverError ?? "Something went wrong")
+			},
+		})
+
+	function handleCopyInviteLink(invite: NonNullable<GetClubOpenInvite>) {
+		setIsCopying(true)
+		navigator.clipboard.writeText(
+			`${env.NEXT_PUBLIC_CLIENT_URL}${Routes.ClubOpenInvite({
+				clubId: club.id,
+				openInviteId: invite.publicId,
+			})}`,
+		)
+		setTimeout(() => {
+			setIsCopying(false)
+			toast.success("Invite link copied to clipboard")
+		}, 500)
+	}
+
+	function handleRefreshInviteLink(invite: NonNullable<GetClubOpenInvite>) {
+		executeRefreshOpenInviteLink({
+			clubId: club.id,
+			openInviteId: invite.id,
+		})
+	}
+
+	if (openInvite) {
+		return (
+			<div className="flex gap-2">
+				<Button
+					size="icon"
+					variant="ghost"
+					onClick={() => handleRefreshInviteLink(openInvite)}
+				>
+					<RefreshCwIcon
+						className={cn("size-4", isRefreshing && "animate-spin")}
+					/>
+					<span className="sr-only">Refresh</span>
+				</Button>
+
+				<Button
+					className="flex items-center justify-between gap-2"
+					variant="outline"
+					onClick={() => handleCopyInviteLink(openInvite)}
+				>
+					<span className={cn(isRefreshing && "opacity-30")}>
+						{isRefreshing ? "Refreshing..." : "Copy invite link"}
+					</span>
+					<div>
+						{isCopying ? (
+							<Loader className="size-4 animate-spin" />
+						) : (
+							<span>
+								<CopyIcon className="size-4" />
+								<span className="sr-only">Copy</span>
+							</span>
+						)}
+					</div>
+				</Button>
+			</div>
+		)
+	}
+	if (!openInvite) {
+		return (
+			<Button
+				size="sm"
+				variant="outline"
+				onClick={() => executeCreateInviteLink({ clubId: club.id })}
+			>
+				Create invite link
+			</Button>
+		)
+	}
 }
 
 const addEmailSchema = z.object({

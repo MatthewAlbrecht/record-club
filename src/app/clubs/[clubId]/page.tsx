@@ -192,5 +192,3 @@ async function getUpcomingAlbums(clubId: number, userId: string) {
 		orderBy: (clubAlbums, { asc }) => [asc(clubAlbums.scheduledFor)],
 	})
 }
-
-type ClubAlbum = Awaited<ReturnType<typeof getUpcomingAlbums>>[number]

@@ -16,6 +16,7 @@ import {
 	clubAlbums,
 	clubInvites,
 	clubMembers,
+	clubOpenInvites,
 	clubQuestions,
 	clubs,
 	images,
@@ -1130,3 +1131,90 @@ export const rejectInvite = authActionClient
 		revalidatePath(Routes.Home)
 		redirect(`${Routes.Home}?inviteRejected=true`)
 	})
+
+const createInviteLinkSchema = z.object({
+	clubId: z.number(),
+})
+
+export const createInviteLink = authActionClient
+	.metadata({ actionName: "createInviteLink" })
+	.schema(createInviteLinkSchema)
+	.action(async ({ parsedInput: { clubId }, ctx: { userId } }) => {
+		const currentUser = await db.query.clubMembers.findFirst({
+			where: (clubMember, { eq }) => eq(clubMember.userId, userId),
+		})
+
+		if (!currentUser || currentUser.role !== "owner") {
+			throw new ActionError("You are not an owner of this club")
+		}
+
+		const club = await db.query.clubs.findFirst({
+			where: (club, { eq }) => eq(club.id, clubId),
+		})
+
+		if (!club) {
+			throw new ActionError("Club not found")
+		}
+
+		const inviteLink = await db
+			.insert(clubOpenInvites)
+			.values({
+				clubId,
+			})
+			.returning()
+
+		revalidatePath(Routes.ClubSettings(clubId, "members"))
+
+		return { inviteLink }
+	})
+
+const refreshOpenInviteLinkSchema = z.object({
+	clubId: z.number(),
+	openInviteId: z.number(),
+})
+
+export const refreshOpenInviteLink = authActionClient
+	.metadata({ actionName: "refreshOpenInviteLink" })
+	.schema(refreshOpenInviteLinkSchema)
+	.action(
+		async ({ parsedInput: { clubId, openInviteId }, ctx: { userId } }) => {
+			const currentUser = await db.query.clubMembers.findFirst({
+				where: (clubMember, { eq }) => eq(clubMember.userId, userId),
+			})
+
+			if (!currentUser || currentUser.role !== "owner") {
+				throw new ActionError("You are not an owner of this club")
+			}
+
+			const club = await db.query.clubs.findFirst({
+				where: (club, { eq }) => eq(club.id, clubId),
+			})
+
+			if (!club) {
+				throw new ActionError("Club not found")
+			}
+
+			const openInvite = await db.query.clubOpenInvites.findFirst({
+				where: (openInvite, { eq, and, isNull }) =>
+					and(eq(openInvite.id, openInviteId), isNull(openInvite.revokedAt)),
+			})
+
+			if (openInvite) {
+				await db
+					.update(clubOpenInvites)
+					.set({ revokedAt: new Date() })
+					.where(eq(clubOpenInvites.id, openInviteId))
+			}
+
+			const newOpenInvite = await db
+				.insert(clubOpenInvites)
+				.values({
+					clubId,
+				})
+				.returning()
+
+			revalidatePath(Routes.ClubSettings(clubId, "members"))
+
+			return { openInvite: newOpenInvite }
+		},
+	)
