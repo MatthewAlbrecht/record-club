@@ -39,7 +39,7 @@ export const env = createEnv({
 		NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: z.string(),
 		NEXT_PUBLIC_CLERK_SIGN_IN_FORCE_REDIRECT_URL: z.string(),
 		NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL: z.string(),
-		NEXT_PUBLIC_CLIENT_URL: z.string(),
+		NEXT_PUBLIC_VERCEL_URL: z.string(),
 	},
 
 	/**
@@ -71,7 +71,7 @@ export const env = createEnv({
 		SPOTIFY_CLIENT_ID: process.env.SPOTIFY_CLIENT_ID,
 		SPOTIFY_CLIENT_SECRET: process.env.SPOTIFY_CLIENT_SECRET,
 		RESEND_API_KEY: process.env.RESEND_API_KEY,
-		NEXT_PUBLIC_CLIENT_URL: process.env.NEXT_PUBLIC_CLIENT_URL,
+		NEXT_PUBLIC_VERCEL_URL: process.env.NEXT_PUBLIC_CLIENT_URL,
 	},
 	/**
 	 * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially

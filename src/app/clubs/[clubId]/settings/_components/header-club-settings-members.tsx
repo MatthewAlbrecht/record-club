@@ -78,7 +78,7 @@ function ButtonInviteLink({
 	function handleCopyInviteLink(invite: NonNullable<GetClubOpenInvite>) {
 		setIsCopying(true)
 		navigator.clipboard.writeText(
-			`${env.NEXT_PUBLIC_CLIENT_URL}${Routes.ClubOpenInvite({
+			`${env.NEXT_PUBLIC_VERCEL_URL}${Routes.ClubOpenInvite({
 				clubId: club.id,
 				openInviteId: invite.publicId,
 			})}`,
