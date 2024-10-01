@@ -11,7 +11,7 @@ import {
 	Text,
 } from "@react-email/components"
 
-const baseUrl = process.env.NEXT_PUBLIC_VERCEL_URL ?? ""
+const baseUrl = process.env.VERCEL_URL ?? ""
 
 export const StripeWelcomeEmail = ({
 	inviter,

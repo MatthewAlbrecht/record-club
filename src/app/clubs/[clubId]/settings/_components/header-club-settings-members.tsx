@@ -24,9 +24,7 @@ import {
 	SheetHeader,
 	SheetTitle,
 	SheetTrigger,
-} from "~/components/ui/sheet"
-import { env } from "~/env"
-import { useZodForm } from "~/lib/hooks/useZodForm"
+} from "~/components/ui/sheet""~/lib/hooks/useZodForm"
 import { Routes } from "~/lib/routes"
 import { cn } from "~/lib/utils"
 import {
@@ -78,7 +76,7 @@ function ButtonInviteLink({
 	function handleCopyInviteLink(invite: NonNullable<GetClubOpenInvite>) {
 		setIsCopying(true)
 		navigator.clipboard.writeText(
-			`${env.NEXT_PUBLIC_VERCEL_URL}${Routes.ClubOpenInvite({
+			`${process.env.VERCEL_URL}${Routes.ClubOpenInvite({
 				clubId: club.id,
 				openInviteId: invite.publicId,
 			})}`,
