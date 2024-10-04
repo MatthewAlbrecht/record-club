@@ -1,13 +1,22 @@
 "use client"
 
+import { InfoIcon } from "lucide-react"
 import { useAction } from "next-safe-action/hooks"
 import { useRouter } from "next/navigation"
-import { useMemo } from "react"
+import { useCallback, useMemo, useState } from "react"
+
 import { toast } from "sonner"
 import { Button } from "~/components/ui/button"
+import { ColorPicker } from "~/components/ui/color-picker"
 import { Input } from "~/components/ui/input"
+import { Label } from "~/components/ui/label"
 import { Switch } from "~/components/ui/switch"
 import { Textarea } from "~/components/ui/textarea"
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger,
+} from "~/components/ui/tooltip"
 import { submitClubAlbumProgress } from "~/server/api/clubs-actions"
 import type {
 	SelectAnswer,
@@ -50,7 +59,7 @@ export function FormQuestionnaire({
 
 	return (
 		<form
-			className="mt-4"
+			className="mx-auto"
 			action={(formData) => {
 				const answers = questions.map(({ id }) => {
 					const answer = formData.get(`question-${id}`)
@@ -60,31 +69,30 @@ export function FormQuestionnaire({
 					}
 				})
 
+				console.log("HELLO", formData.get("action"))
+
 				execute({
 					clubAlbumId,
 					answers,
-					hasListened: formData.get("hasListened") === "on",
+					hasListened: formData.get("action") === "submit",
 				})
 			}}
 		>
-			<h2 className="font-bold text-xs uppercase">Questions</h2>
-			<ul className="flex flex-col gap-4">
-				<li className="flex flex-col py-2">
-					<span className="text-muted-foreground text-xs">
-						Finished listening
-					</span>
-					<div>
-						<p className="mt-1">Have you finished listening to the album?</p>
-						<div className="mt-2">
-							<Switch name="hasListened" />
-						</div>
-					</div>
-				</li>
+			<ul className=" grid grid-cols-1 gap-4">
 				{questions.map(({ question, id: clubQuestionId }, index) => (
 					<li key={question.id} className="flex flex-col py-2">
-						<span className="text-muted-foreground text-xs">{index + 1}</span>
 						<div>
-							<p className="mt-1">{question.text}</p>
+							<Label className="flex items-center gap-2">
+								{question.label}
+								<Tooltip>
+									<TooltipTrigger asChild>
+										<InfoIcon className="size-4 text-slate-500" />
+									</TooltipTrigger>
+									<TooltipContent>
+										<p>{question.text}</p>
+									</TooltipContent>
+								</Tooltip>
+							</Label>
 							<div className="mt-2">
 								<QuestionBuilder
 									question={question}
@@ -96,8 +104,13 @@ export function FormQuestionnaire({
 					</li>
 				))}
 			</ul>
-			<div className="flex justify-end gap-2">
-				<Button type="submit">Submit</Button>
+			<div className="mt-6 flex justify-end gap-2">
+				<Button type="submit" variant="outline" name="action" value="save">
+					Save for now
+				</Button>
+				<Button type="submit" name="action" value="submit">
+					Submit and publish
+				</Button>
 			</div>
 		</form>
 	)
@@ -149,14 +162,10 @@ function QuestionBuilder({
 
 	if (question.category === "number") {
 		return (
-			<Input
-				type="number"
+			<InputNumber
 				name={name}
-				step="0.1"
-				min="0"
-				max="10"
 				defaultValue={
-					answer?.answerNumber != null ? answer.answerNumber : undefined
+					answer?.answerNumber != null ? answer.answerNumber : "5.0"
 				}
 			/>
 		)
@@ -164,15 +173,46 @@ function QuestionBuilder({
 
 	if (question.category === "color-picker") {
 		return (
-			<Input
-				type="color"
+			<ColorPicker
 				name={name}
-				defaultValue={
-					answer?.answerColor != null ? answer.answerColor : undefined
-				}
+				defaultValue={answer?.answerColor ?? undefined}
 			/>
 		)
 	}
 
 	return null
+}
+
+function InputNumber({
+	name,
+	defaultValue,
+}: { name: string; defaultValue: string }) {
+	const [value, setValue] = useState(defaultValue)
+
+	const handleKeyDown = useCallback(
+		(e: React.KeyboardEvent<HTMLInputElement>) => {
+			if (e.shiftKey && (e.key === "ArrowUp" || e.key === "ArrowDown")) {
+				e.preventDefault()
+				const currentValue = Number.parseFloat(e.currentTarget.value)
+				const newValue =
+					e.key === "ArrowUp" ? currentValue + 1 : currentValue - 1
+				const clampedValue = Math.min(Math.max(newValue, 0), 10)
+				setValue(clampedValue.toFixed(1))
+			}
+		},
+		[],
+	)
+
+	return (
+		<Input
+			type="number"
+			name={name}
+			step="0.1"
+			min="0"
+			max="10"
+			value={value}
+			onChange={(e) => setValue(e.target.value)}
+			onKeyDown={handleKeyDown}
+		/>
+	)
 }

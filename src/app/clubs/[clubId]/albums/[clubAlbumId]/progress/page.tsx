@@ -34,6 +34,11 @@ export default async function ProgressPage({
 			),
 		with: {
 			album: true,
+			club: {
+				with: {
+					image: true,
+				},
+			},
 		},
 	})
 
@@ -61,30 +66,49 @@ export default async function ProgressPage({
 	const album = clubAlbum.album
 
 	return (
-		<div className="container mx-auto p-4">
-			<div className="flex items-center space-x-4">
-				{album.spotifyImageUrl ? (
+		<div className="mx-auto max-w-sm overflow-hidden rounded-xl shadow-xl">
+			<div className="relative h-48 w-full bg-gradient-to-bl from-slate-50 to-slate-200">
+				{clubAlbum.club.image && (
 					<Image
-						src={album.spotifyImageUrl}
-						alt={album.name}
-						width={32 * 4}
-						height={32 * 4}
-						className="rounded-sm"
+						src={clubAlbum.club.image.url}
+						alt={clubAlbum.club.name}
+						className="object-cover"
+						fill
+						style={{
+							objectPosition: `${clubAlbum.club.image.focalPointX}% ${clubAlbum.club.image.focalPointY}%`,
+						}}
 					/>
-				) : (
-					<div className="h-32 w-32 rounded-sm bg-slate-200" />
 				)}
-				<div>
-					<h1 className="font-bold text-2xl">{clubAlbum.album.artistNames}</h1>
-					<p className="text-muted-foreground">{clubAlbum.album.name}</p>
+				<div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-b from-transparent to-black/80 p-4">
+					<div className="flex items-center space-x-4">
+						{album.spotifyImageUrl ? (
+							<Image
+								src={album.spotifyImageUrl}
+								alt={album.name}
+								width={12 * 4}
+								height={12 * 4}
+								className="rounded-sm"
+							/>
+						) : (
+							<div className="h-12 w-12 rounded-sm bg-slate-200" />
+						)}
+						<div>
+							<h1 className="font-bold text-lg text-slate-50">
+								{clubAlbum.album.artistNames}
+							</h1>
+							<p className="text-slate-300 text-sm">{clubAlbum.album.name}</p>
+						</div>
+					</div>
 				</div>
 			</div>
-			<FormQuestionnaire
-				questions={questions}
-				answers={answers}
-				clubAlbumId={clubAlbum.id}
-				clubId={Number(clubId)}
-			/>
+			<div className="p-4">
+				<FormQuestionnaire
+					questions={questions}
+					answers={answers}
+					clubAlbumId={clubAlbum.id}
+					clubId={Number(clubId)}
+				/>
+			</div>
 		</div>
 	)
 }

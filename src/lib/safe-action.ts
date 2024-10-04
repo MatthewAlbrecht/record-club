@@ -8,7 +8,7 @@ import { cookies } from "next/headers"
 import { z } from "zod"
 import { env } from "~/env"
 import { ActionError, DatabaseError } from "~/server/api/utils"
-import { redis } from "~/server/db"
+import { redis } from "~/server/db/redis"
 
 const ratelimit = new Ratelimit({
 	redis: redis,
