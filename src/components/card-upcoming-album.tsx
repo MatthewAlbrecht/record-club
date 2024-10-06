@@ -1,5 +1,6 @@
+import { auth } from "@clerk/nextjs/server"
 import { differenceInDays, format, parseISO } from "date-fns"
-import { ArrowRight } from "lucide-react"
+import { ArrowRight, UsersIcon } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import type {
@@ -12,18 +13,33 @@ export function CardUpcomingAlbum({
 	clubAlbum,
 }: {
 	clubAlbum: Pick<SelectClubAlbum, "id" | "scheduledFor"> & {
-		userProgress: Pick<SelectUserClubAlbumProgress, "listenedAt">[]
+		userProgress: Pick<
+			SelectUserClubAlbumProgress,
+			"listenedAt" | "userId" | "skippedAt"
+		>[]
 		club: Pick<SelectClub, "id">
 		album: Pick<SelectAlbum, "id" | "artistNames" | "name" | "spotifyImageUrl">
 	}
 }) {
+	const { userId } = auth()
 	const relativeDate = getRelativeDateLabel(clubAlbum.scheduledFor)
 	const album = clubAlbum.album
+	const userProgress = clubAlbum.userProgress.find(
+		(progress) => progress.userId === userId,
+	)
+
+	const totalListened = clubAlbum.userProgress.reduce((acc, progress) => {
+		if (progress.listenedAt) {
+			return acc + 1
+		}
+		return acc
+	}, 0)
+
 	return (
 		<li key={clubAlbum.id}>
 			<Link
 				href={
-					clubAlbum.userProgress[0]?.listenedAt
+					userProgress?.listenedAt
 						? `/clubs/${clubAlbum.club.id}/albums/${clubAlbum.id}`
 						: `/clubs/${clubAlbum.club.id}/albums/${clubAlbum.id}/progress`
 				}
@@ -42,9 +58,15 @@ export function CardUpcomingAlbum({
 				)}
 				<div className="flex h-full flex-grow flex-col justify-between overflow-hidden py-2">
 					<div className="min-w-0">
-						<h3 className="overflow-hidden text-ellipsis whitespace-nowrap font-medium text-lg text-slate-700">
-							{clubAlbum.album.artistNames}
-						</h3>
+						<div className="flex flex-row items-center justify-between gap-2">
+							<h3 className="overflow-hidden text-ellipsis whitespace-nowrap font-medium text-lg text-slate-700">
+								{clubAlbum.album.artistNames}
+							</h3>
+							<div className="flex flex-row items-center gap-1">
+								<span className="text-slate-500 text-sm">{totalListened}</span>
+								<UsersIcon className="h-3.5 w-3.5 text-slate-500" />
+							</div>
+						</div>
 						<p className="overflow-hidden text-ellipsis whitespace-nowrap text-slate-500 text-sm">
 							{clubAlbum.album.name}
 						</p>

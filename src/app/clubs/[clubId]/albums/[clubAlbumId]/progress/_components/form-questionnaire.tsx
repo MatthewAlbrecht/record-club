@@ -69,8 +69,6 @@ export function FormQuestionnaire({
 					}
 				})
 
-				console.log("HELLO", formData.get("action"))
-
 				execute({
 					clubAlbumId,
 					answers,

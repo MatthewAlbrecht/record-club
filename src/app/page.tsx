@@ -41,9 +41,8 @@ async function SignedInHome() {
 	const clubsImAMemberOf = await getUserClubs(userId)
 	const clubIds = clubsImAMemberOf.map(({ club }) => club.id)
 	const upcomingAlbums = await getUpcomingAlbums(clubIds, userId)
-	const invites = await getOpenClubInvites(userId)
 
-	console.log(invites)
+	const invites = await getOpenClubInvites(userId)
 
 	return (
 		<>

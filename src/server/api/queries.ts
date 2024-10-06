@@ -186,7 +186,11 @@ export const getUpcomingAlbums = async (clubIds: number[], userId: string) => {
 				},
 			},
 			userProgress: {
-				where: (userProgress, { eq }) => eq(userProgress.userId, userId),
+				columns: {
+					skippedAt: true,
+					userId: true,
+					listenedAt: true,
+				},
 			},
 		},
 		orderBy: (clubAlbums, { asc }) => [asc(clubAlbums.scheduledFor)],
