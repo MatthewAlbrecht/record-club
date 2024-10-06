@@ -17,10 +17,10 @@ export default async function DemoPage({
 	})
 
 	const userProgressions = await db.query.userClubAlbumProgress.findMany({
-		where: (userClubAlbumProgress, { eq, and }) =>
+		where: (userClubAlbumProgress, { eq, and, isNotNull }) =>
 			and(
 				eq(userClubAlbumProgress.clubAlbumId, Number(clubAlbumId)),
-				eq(userClubAlbumProgress.hasListened, true),
+				isNotNull(userClubAlbumProgress.listenedAt),
 			),
 		with: {
 			answers: true,

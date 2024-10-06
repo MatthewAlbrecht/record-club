@@ -423,7 +423,6 @@ export const submitClubAlbumProgress = authActionClient
 						userId,
 						clubId: clubAlbum.clubId,
 						albumId: clubAlbum.albumId,
-						hasListened,
 						listenedAt: hasListened ? new Date() : undefined,
 					})
 					.onConflictDoUpdate({
@@ -432,7 +431,6 @@ export const submitClubAlbumProgress = authActionClient
 							userClubAlbumProgressTable.clubAlbumId,
 						],
 						set: {
-							hasListened,
 							listenedAt: hasListened ? new Date() : undefined,
 						},
 					})

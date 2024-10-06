@@ -69,6 +69,11 @@ export const clubInviteStatusEnum = pgEnum("club_invite_status", [
 	"seen",
 ])
 
+export const commentableTypeEnum = pgEnum("commentable_type", [
+	"club",
+	"club_album",
+])
+
 /**
  * ----------------------------------------------------------------------------
  * Tables ---------------------------------------------------------------------
@@ -102,6 +107,9 @@ export const clubs = createTable(
 		shortDescription: varchar("short_description", { length: 128 }).notNull(),
 		longDescription: varchar("long_description", { length: 2048 }).notNull(),
 		imageId: integer("image_id").references(() => images.id),
+		commentableType: commentableTypeEnum("commentable_type")
+			.default("club")
+			.notNull(),
 		createdById: varchar("created_by_id")
 			.references(() => users.id)
 			.notNull(),
@@ -206,6 +214,9 @@ export const clubAlbums = createTable(
 			.references(() => albums.id)
 			.notNull(),
 		scheduledFor: date("scheduled_for").notNull(),
+		commentableType: commentableTypeEnum("commentable_type")
+			.default("club_album")
+			.notNull(),
 		createdById: varchar("created_by_id")
 			.references(() => users.id)
 			.notNull(),
@@ -298,7 +309,7 @@ export const userClubAlbumProgress = createTable(
 		clubAlbumId: integer("club_album_id")
 			.references(() => clubAlbums.id)
 			.notNull(),
-		hasListened: boolean("has_listened").default(false).notNull(),
+		skippedAt: timestamp("skipped_at", { withTimezone: true }),
 		listenedAt: timestamp("listened_at", { withTimezone: true }),
 		createdAt: timestamp("created_at", { withTimezone: true })
 			.default(sql`CURRENT_TIMESTAMP`)
@@ -345,6 +356,23 @@ export const artists = createTable(
 		),
 	}),
 )
+
+export const comments = createTable("comment", {
+	id: serial("id").primaryKey(),
+	commentableType: commentableTypeEnum("commentable_type").notNull(),
+	commentableId: integer("commentable_id").notNull(),
+	userId: varchar("user_id")
+		.references(() => users.id)
+		.notNull(),
+	body: varchar("body", { length: 1024 }).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true })
+		.default(sql`CURRENT_TIMESTAMP`)
+		.notNull(),
+	deletedAt: timestamp("deleted_at", { withTimezone: true }),
+	updatedAt: timestamp("updated_at", { withTimezone: true }).$onUpdate(
+		() => new Date(),
+	),
+})
 
 export const albumArtists = createTable(
 	"album_artist",
@@ -453,6 +481,7 @@ export const clubsRelations = relations(clubs, ({ many, one }) => ({
 		references: [images.id],
 	}),
 	questions: many(clubQuestions),
+	comments: many(comments),
 }))
 
 export const clubMembersRelations = relations(clubMembers, ({ one }) => ({
@@ -480,6 +509,7 @@ export const clubAlbumsRelations = relations(clubAlbums, ({ one, many }) => ({
 		fields: [clubAlbums.createdById],
 		references: [users.id],
 	}),
+	comments: many(comments),
 }))
 
 export const clubQuestionsRelations = relations(clubQuestions, ({ one }) => ({
@@ -558,6 +588,21 @@ export const clubInvitesRelations = relations(clubInvites, ({ one }) => ({
 	createdBy: one(users, {
 		fields: [clubInvites.createdById],
 		references: [users.id],
+	}),
+}))
+
+export const commentsRelations = relations(comments, ({ one }) => ({
+	user: one(users, {
+		fields: [comments.userId],
+		references: [users.id],
+	}),
+	clubAlbum: one(clubAlbums, {
+		fields: [comments.commentableId, comments.commentableType],
+		references: [clubAlbums.id, clubAlbums.commentableType],
+	}),
+	club: one(clubs, {
+		fields: [comments.commentableId, comments.commentableType],
+		references: [clubs.id, clubs.commentableType],
 	}),
 }))
 

@@ -12,7 +12,7 @@ export function CardUpcomingAlbum({
 	clubAlbum,
 }: {
 	clubAlbum: Pick<SelectClubAlbum, "id" | "scheduledFor"> & {
-		userProgress: Pick<SelectUserClubAlbumProgress, "hasListened">[]
+		userProgress: Pick<SelectUserClubAlbumProgress, "listenedAt">[]
 		club: Pick<SelectClub, "id">
 		album: Pick<SelectAlbum, "id" | "artistNames" | "name" | "spotifyImageUrl">
 	}
@@ -23,7 +23,7 @@ export function CardUpcomingAlbum({
 		<li key={clubAlbum.id}>
 			<Link
 				href={
-					clubAlbum.userProgress[0]?.hasListened
+					clubAlbum.userProgress[0]?.listenedAt
 						? `/clubs/${clubAlbum.club.id}/albums/${clubAlbum.id}`
 						: `/clubs/${clubAlbum.club.id}/albums/${clubAlbum.id}/progress`
 				}
@@ -52,7 +52,7 @@ export function CardUpcomingAlbum({
 					<div className="flex items-center justify-between gap-2">
 						<span className="text-slate-500 text-sm">{relativeDate}</span>
 						<div className="flex flex-row items-center gap-1 text-slate-500 text-sm">
-							{clubAlbum.userProgress[0]?.hasListened
+							{clubAlbum.userProgress[0]?.listenedAt
 								? "Explore reviews"
 								: "Track progress"}
 							<ArrowRight className="h-4 w-4" />
